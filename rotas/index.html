@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0b1e">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Jogaí">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Rotas e Portos — Jogaí</title>
+  <meta name="description" content="Quiz de portos, rotas e logística internacional com níveis e ranking.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/levels.css">
+  <link rel="stylesheet" href="/css/games.css">
+</head>
+<body>
+  <header class="site">
+    <div class="container">
+      <a href="/" class="logo pixel">Joga<span>í</span></a>
+      <div class="header-right">
+        <a href="/" class="back">← Todos os jogos</a>
+        <div id="account"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container game-layout">
+    <section>
+      <h1 class="game-title pixel">🚢 Rotas e Portos</h1>
+      <p class="game-sub">Portos, canais, aeroportos e termos da logística internacional. 3 erros e o nível acaba.</p>
+
+      <div class="toolbar">
+        <button class="btn ghost mute-btn" id="mute-btn" type="button" aria-pressed="false">🔊 Som ligado</button>
+        <button class="btn ghost mute-btn" id="restart-btn" type="button">↺ Recomeçar</button>
+        <span class="spacer"></span>
+        <span class="level-label" id="level-label">Nível 1</span>
+        <span class="timer pixel" id="timer">00:00</span>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="hud"><span>Pergunta: <b id="hud-a">0</b> / <b id="hud-g">0</b></span><span>Erros: <b id="hud-e">0</b> / 3</span></div>
+        <p class="q-text" id="q-text"></p>
+        <div class="q-opts" id="q-opts"></div>
+        <p class="q-why" id="q-why"></p>
+        <div class="overlay" id="overlay">
+          <div class="pixel" id="overlay-title">Nível 1</div>
+          <p id="overlay-text"></p>
+          <button class="btn" id="start-btn" type="button">Começar</button>
+        </div>
+      </div>
+
+      <div class="submit-box" id="submit-box" hidden>
+        <h3 class="pixel" id="win-title">Nível concluído!</h3>
+        <p class="submit-info" id="submit-info"></p>
+        <button class="btn" id="submit-btn" type="button">Salvar no ranking</button>
+        <div class="msg" id="submit-msg"></div>
+        <div class="win-actions" id="win-actions" hidden>
+          <button class="btn ghost" id="next-btn" type="button">Próximo nível →</button>
+        </div>
+      </div>
+
+      <h2 class="levels-title pixel">Níveis</h2>
+      <div class="levels" id="levels"></div>
+      <p class="levels-hint">Conclua um nível para liberar o próximo.</p>
+    </section>
+
+    <aside class="ranking">
+      <h2 class="pixel">🏆 Top 10 · <span id="rank-level">Nível 1</span></h2>
+      <ol id="ranking-list"><li class="empty">Carregando...</li></ol>
+    </aside>
+  </main>
+
+  <footer class="site">
+    <div class="container">Jogaí © 2026 · feito pela Brasa Digital</div>
+  </footer>
+
+  <script type="module" src="/rotas/game.js"></script>
+</body>
+</html>

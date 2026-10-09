@@ -200,3 +200,5 @@ header.site { padding-top: env(safe-area-inset-top); }
 footer.site { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
 button, .btn, .lv, .card { touch-action: manipulation; }
 .btn, .lv { min-height: 44px; }
+
+.section-title { font-size: 14px; color: var(--accent); margin: 36px 0 16px; }

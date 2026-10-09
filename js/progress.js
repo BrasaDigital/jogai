@@ -6,7 +6,7 @@ import { supabase } from "/js/supabase.js";
 import { onAuthChange } from "/js/account.js";
 import { isUnlocked as unlocked, firstOpen as open } from "/js/levels.js";
 
-const GAMES = ["reflexo", "encaixe", "cobrinha", "memoria", "alvo", "simon"];
+const GAMES = ["reflexo", "encaixe", "cobrinha", "memoria", "alvo", "simon", "incoterms", "ncm", "processo", "erros", "rotas"];
 export const GUEST_MAX = 3; // sem conta, só os 3 primeiros níveis
 const GUEST_KEY = "jogai_progress_guest";
 const LEGACY_ENCAIXE = "jogai_encaixe_done"; // chave da versão anterior do Encaixe

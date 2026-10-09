@@ -57,3 +57,35 @@
 .pad[data-i="1"] { background: #4fc3ff; }
 .pad[data-i="2"] { background: #ffd23f; }
 .pad[data-i="3"] { background: #5be37d; }
+
+/* Quiz (comex) */
+.q-text { font-size: 18px; font-weight: 600; margin: 4px 0 14px; min-height: 3.2em; }
+.q-opts { display: grid; gap: 10px; }
+.qopt {
+  text-align: left; padding: 12px 14px; min-height: 48px; border: 2px solid var(--panel-2);
+  background: transparent; color: var(--text); border-radius: 12px; font-size: 15px; cursor: pointer;
+}
+.qopt:hover { border-color: var(--accent); }
+.qopt.right { background: var(--ok); border-color: var(--ok); color: #0d0b1e; }
+.qopt.wrong { background: var(--bad); border-color: var(--bad); color: #0d0b1e; }
+.q-why { color: var(--muted); font-size: 14px; margin-top: 12px; min-height: 2.6em; }
+
+/* Processo (ordenar) */
+.steps-done { list-style: none; counter-reset: s; display: grid; gap: 6px; margin: 0 0 14px; padding: 0; }
+.steps-done li { counter-increment: s; background: var(--ok); color: #0d0b1e; border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.steps-done li::before { content: counter(s) "º  "; font-weight: 700; }
+.steps-pool { display: grid; gap: 8px; }
+.step-btn { text-align: left; padding: 12px 14px; min-height: 48px; border: 2px solid var(--panel-2); background: var(--panel-2); color: var(--text); border-radius: 12px; font-size: 14px; cursor: pointer; }
+.step-btn.bad { border-color: var(--bad); animation: shake 0.3s; }
+@keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+/* Caça aos erros */
+.docs { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 640px) { .docs { grid-template-columns: 1fr 1fr; } }
+.doc { background: #fbfaf5; color: #1b1530; border-radius: 10px; padding: 10px; }
+.doc h4 { margin: 0 0 6px; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+.drow { display: flex; justify-content: space-between; gap: 8px; width: 100%; text-align: left; padding: 8px; min-height: 40px; background: transparent; border: 0; border-bottom: 1px dashed #c9c3a8; color: inherit; font-size: 13px; cursor: pointer; }
+.drow span:first-child { color: #6b6485; }
+.drow span:last-child { font-weight: 600; text-align: right; }
+.drow.found { background: #b8f0c9; }
+.drow.miss { background: #ffc9c9; }
