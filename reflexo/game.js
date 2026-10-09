@@ -1,6 +1,7 @@
 import { getRanking, saveScore } from "/js/supabase.js";
 import { initAudio, sfx, isMuted, setMuted } from "/js/sound.js";
 import { onAuthChange, openAuth } from "/js/account.js";
+import { mountMoreLevels } from "/js/more-levels.js";
 import { onProgress, isDone, isUnlocked, firstOpen, completeLevel } from "/js/progress.js";
 import { LEVELS, targetOf, passed } from "/reflexo/levels.js";
 
@@ -297,3 +298,5 @@ onProgress(() => {
   const target = firstOpen(GAME, LEVELS);
   if (!userPicked && untouched && target !== level) startLevel(target);
 });
+
+mountMoreLevels(GAME);

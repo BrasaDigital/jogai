@@ -4,6 +4,7 @@
 import { getRanking, saveScore } from "/js/supabase.js";
 import { initAudio, sfx, isMuted, setMuted } from "/js/sound.js";
 import { onAuthChange, openAuth } from "/js/account.js";
+import { mountMoreLevels } from "/js/more-levels.js";
 import { onProgress, isDone, isUnlocked, firstOpen, completeLevel } from "/js/progress.js";
 
 const $ = (id) => document.getElementById(id);
@@ -194,6 +195,8 @@ export function createKit({ game, total, goalText, onSelect, onBegin, onStop }) 
   };
   muteBtn.addEventListener("click", () => { initAudio(); setMuted(!isMuted()); renderMute(); if (!isMuted()) sfx.saved(); });
   renderMute();
+
+  mountMoreLevels(game);
 
   // ---------- início ----------
   const fromHash = parseInt(location.hash.slice(1), 10);

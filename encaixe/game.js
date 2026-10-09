@@ -1,6 +1,7 @@
 import { getRanking, saveScore } from "/js/supabase.js";
 import { initAudio, sfx, isMuted, setMuted } from "/js/sound.js";
 import { onAuthChange, openAuth } from "/js/account.js";
+import { mountMoreLevels } from "/js/more-levels.js";
 import { onProgress, isDone, isUnlocked, firstOpen, completeLevel } from "/js/progress.js";
 import { CHALLENGES } from "/encaixe/challenges.js";
 import {
@@ -413,3 +414,5 @@ onProgress(() => {
   const target = firstOpen(GAME, CHALLENGES.length);
   if (!userPicked && untouched && target !== level) startLevel(target);
 });
+
+mountMoreLevels(GAME);
