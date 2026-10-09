@@ -1,4 +1,5 @@
 import { getRanking, saveScore } from "/js/supabase.js";
+import { initAudio, sfx, isMuted, setMuted } from "/js/sound.js";
 
 const GAME = "reflexo";
 const TOTAL_ROUNDS = 3;
@@ -44,10 +45,12 @@ function renderDots() {
 
 function startRound() {
   setState("waiting", "Espere o verde...", "Não clique ainda!");
+  sfx.wait();
   const wait = MIN_WAIT + Math.random() * (MAX_WAIT - MIN_WAIT);
   timer = setTimeout(() => {
     startTime = performance.now();
     setState("go", "CLIQUE!", "");
+    sfx.go();
   }, wait);
 }
 
@@ -64,10 +67,13 @@ function resetGame() {
 }
 
 function handleClick() {
+  initAudio(); // o navegador só libera o som depois de um clique
+
   if (state === "idle") return resetGame();
 
   if (state === "waiting") {
     clearTimeout(timer);
+    sfx.fail();
     return setState("fail", "Cedo demais!", "Clique para tentar essa rodada de novo");
   }
 
@@ -77,9 +83,11 @@ function handleClick() {
     const ms = Math.round(performance.now() - startTime);
     times.push(ms);
     if (times.length < TOTAL_ROUNDS) {
+      sfx.hit(ms);
       return setState("result", `${ms} ms`, "Clique para a próxima rodada");
     }
     finalScore = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+    sfx.win();
     setState("finished", `Média: ${finalScore} ms`, `Rodadas: ${times.join(" · ")} ms — clique para jogar de novo`);
     submitBox.hidden = false;
     nameInput.focus({ preventScroll: true });
@@ -118,6 +126,8 @@ submitForm.addEventListener("submit", async (e) => {
     await saveScore(GAME, name, finalScore);
     try { localStorage.setItem("jogai_name", name); } catch (_) {}
     alreadySaved = true;
+    initAudio();
+    sfx.saved();
     submitMsg.className = "msg ok";
     submitMsg.textContent = "Pontuação salva! 🎉";
     loadRanking();
@@ -161,6 +171,19 @@ async function loadRanking() {
     rankingList.appendChild(li);
   }
 }
+
+const muteBtn = document.getElementById("mute-btn");
+function renderMute() {
+  muteBtn.textContent = isMuted() ? "🔇 Som desligado" : "🔊 Som ligado";
+  muteBtn.setAttribute("aria-pressed", String(isMuted()));
+}
+muteBtn.addEventListener("click", () => {
+  initAudio();
+  setMuted(!isMuted());
+  renderMute();
+  if (!isMuted()) sfx.saved(); // toca um bipe para confirmar que o som voltou
+});
+renderMute();
 
 renderDots();
 loadRanking();

@@ -154,6 +154,7 @@ button.btn {
 }
 button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 button.btn.ghost { background: var(--panel-2); color: var(--text); }
+.mute-btn { margin-bottom: 16px; padding: 8px 14px; font-size: 13px; }
 .msg { margin-top: 10px; font-size: 14px; }
 .msg.ok { color: var(--ok); }
 .msg.err { color: var(--bad); }
