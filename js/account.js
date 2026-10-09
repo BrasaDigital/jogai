@@ -1,3 +1,4 @@
+import "/js/pwa.js";
 // Conta do jogador: botão no cabeçalho + janela de entrar / criar conta.
 import { supabase } from "/js/supabase.js";
 

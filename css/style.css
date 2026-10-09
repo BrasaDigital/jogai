@@ -192,3 +192,11 @@ footer.site {
   padding: 24px 0 40px;
   border-top: 2px solid var(--panel-2);
 }
+
+/* Celular / app instalado */
+html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+body { min-height: 100dvh; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+header.site { padding-top: env(safe-area-inset-top); }
+footer.site { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
+button, .btn, .lv, .card { touch-action: manipulation; }
+.btn, .lv { min-height: 44px; }
