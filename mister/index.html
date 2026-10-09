@@ -33,21 +33,24 @@
 
   <main class="container mister">
     <h1 class="game-title pixel">⚽ Mister</h1>
-    <p class="game-sub">Escolha um clube fictício, monte o time e dispute a temporada. Sua carreira fica salva neste aparelho e, se você entrar na conta, em qualquer lugar.</p>
+    <p class="game-sub">Comande um clube do Brasileirão: escale o time, compre e venda jogadores, cuide do caixa e dispute várias temporadas. Sua carreira fica salva neste aparelho e, se você entrar na conta, em qualquer lugar.</p>
 
     <section id="escolha" hidden>
       <h2 class="levels-title pixel">Escolha seu clube</h2>
+      <p class="help">Brasileirão Série A. Clubes grandes têm mais dinheiro e elenco forte; clubes pequenos são um desafio. Dados de demonstração, não oficiais; sem ligação com os clubes.</p>
       <div class="clubes" id="clubes"></div>
     </section>
 
     <section id="carreira" hidden>
       <div class="m-top">
-        <div><b id="m-clube"></b> · Temporada <span id="m-temp">1</span> · Rodada <span id="m-rodada">0</span>/<span id="m-total">14</span></div>
-        <div class="m-save"><span id="m-saved"></span> <button class="btn ghost" id="m-reset" type="button">Novo jogo</button></div>
+        <div><b id="m-clube"></b> · Temporada <span id="m-temp">1</span> · Rodada <span id="m-rodada">0</span>/<span id="m-total">38</span></div>
+        <div class="m-save"><b id="m-caixa"></b> <span id="m-saved"></span> <button class="btn ghost" id="m-reset" type="button">Novo jogo</button></div>
       </div>
       <nav class="m-tabs" role="tablist">
         <button class="on" data-tab="jogo" type="button">Jogo</button>
         <button data-tab="escalacao" type="button">Escalação</button>
+        <button data-tab="mercado" type="button">Mercado</button>
+        <button data-tab="financas" type="button">Finanças</button>
         <button data-tab="tabela" type="button">Tabela</button>
         <button data-tab="artilheiros" type="button">Artilheiros</button>
       </nav>
@@ -58,6 +61,7 @@
           <button class="btn" id="m-play" type="button">▶ Jogar rodada</button>
           <button class="btn ghost" id="m-skip" type="button" hidden>⏩ Pular</button>
         </div>
+        <div class="m-msg" id="m-msg"></div>
         <div class="m-score" id="m-score" hidden></div>
         <ol class="m-feed" id="m-feed"></ol>
         <div class="m-others" id="m-others"></div>
@@ -68,15 +72,41 @@
           <select id="m-form"></select>
         </label>
         <p class="help" id="m-forca"></p>
-        <p class="help">Toque num titular e depois num reserva <b>da mesma posição</b> para trocar.</p>
+        <p class="help">Toque num titular e depois num reserva para trocar. Jogador fora da posição joga pior (aparece em laranja). 🩹 lesão · 🟥 suspenso · 🟨 amarelos.</p>
         <h3 class="m-h">Titulares</h3>
         <div class="m-list" id="m-xi"></div>
         <h3 class="m-h">Reservas</h3>
         <div class="m-list" id="m-bench"></div>
       </div>
 
+      <div class="m-panel" id="tab-mercado" hidden>
+        <nav class="m-sub">
+          <button class="on" data-sub="comprar" type="button">Comprar</button>
+          <button data-sub="vender" type="button">Vender</button>
+          <button data-sub="livres" type="button">Livres</button>
+        </nav>
+        <div class="m-msg" id="m-mmsg"></div>
+        <div id="sub-comprar">
+          <div class="m-filtros">
+            <select id="f-pos"><option value="">Todas posições</option><option value="G">Goleiro</option><option value="D">Defensor</option><option value="M">Meia</option><option value="A">Atacante</option></select>
+            <select id="f-preco"><option value="0">Qualquer preço</option><option value="5">até R$ 5 mi</option><option value="15">até R$ 15 mi</option><option value="30">até R$ 30 mi</option></select>
+          </div>
+          <div class="m-list" id="m-compra"></div>
+        </div>
+        <div id="sub-vender" hidden><div class="m-list" id="m-venda"></div></div>
+        <div id="sub-livres" hidden><p class="help">Jogadores sem clube: não há custo de transferência, só o salário.</p><div class="m-list" id="m-livres"></div></div>
+      </div>
+
+      <div class="m-panel" id="tab-financas" hidden>
+        <div class="m-fin" id="m-fin"></div>
+        <h3 class="m-h">Contratos</h3>
+        <p class="help">Quem termina o contrato sai de graça no fim da temporada. Renove os importantes (custa luvas).</p>
+        <div class="m-list" id="m-contratos"></div>
+      </div>
+
       <div class="m-panel" id="tab-tabela" hidden>
         <div class="table-wrap"><table class="m-table" id="m-table"></table></div>
+        <p class="help">Verde: Libertadores (1º ao 4º). Vermelho: rebaixamento (17º ao 20º).</p>
       </div>
 
       <div class="m-panel" id="tab-artilheiros" hidden>

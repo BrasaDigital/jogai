@@ -45,3 +45,30 @@
 .m-table th:nth-child(2), .m-table td:nth-child(2) { text-align: left; }
 .m-table tr.eu td { background: rgba(255, 210, 63, .15); font-weight: 700; }
 .m-scorers { padding-left: 22px; line-height: 2; }
+
+/* v2 */
+.m-sub { display: flex; gap: 6px; margin-bottom: 10px; }
+.m-sub button { flex: 1; min-height: 40px; background: var(--panel-2); color: var(--text); border: 0; border-radius: 8px; cursor: pointer; }
+.m-sub button.on { background: var(--accent); color: #0d0b1e; font-weight: 700; }
+.m-filtros { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.m-filtros select { background: var(--panel-2); color: var(--text); border: 0; border-radius: 8px; min-height: 40px; padding: 0 10px; font-size: 14px; }
+.m-msg { min-height: 1.4em; font-size: 14px; margin: 8px 0; color: var(--accent); }
+.m-msg.err { color: var(--bad); }
+.m-fin { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.m-fin div { background: var(--panel-2); border-radius: 10px; padding: 10px; font-size: 13px; color: var(--muted); }
+.m-fin b { display: block; font-size: 17px; color: var(--text); }
+.m-fin .neg b { color: var(--bad); }
+.jog.imp .pos { color: #ff9f43; }
+.jog .flag { font-size: 12px; }
+.jog .info { color: var(--muted); font-size: 12px; }
+.row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--panel-2); border-radius: 10px; font-size: 14px; flex-wrap: wrap; }
+.row .pos { width: 22px; font-weight: 700; color: var(--accent); }
+.row .nome { flex: 1; min-width: 120px; }
+.row .info { color: var(--muted); font-size: 12px; }
+.row .btn { min-height: 36px; padding: 4px 12px; font-size: 13px; }
+.row .ofertas { width: 100%; display: grid; gap: 6px; }
+.m-table tr.lib td:first-child { box-shadow: inset 3px 0 0 var(--ok); }
+.m-table tr.reb td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
+.clube .caixa { display: block; font-size: 12px; color: var(--muted); }
+.m-demit { background: #120f26; border-radius: 10px; padding: 14px; margin-top: 10px; }
+.m-demit .m-list { margin-top: 8px; }

@@ -22,7 +22,7 @@ reflexo/            jogo Teste de Reflexo
 | Encaixe | 40 desafios com solução única; menor tempo (s) por desafio |
 | Incoterms, NCM, Rotas e Portos | 10 níveis de quiz (perguntas geradas de tabelas em `*/data.js`); 3 erros e o nível acaba; menor tempo no ranking |
 | Processo de Comex, Caça aos Erros | 10 níveis; ordenar etapas / achar divergências em fatura e packing list |
-| Mister | Gerenciamento de futebol: 8 clubes fictícios, escalação, partidas simuladas e tabela; carreira salva no aparelho ou na conta (`career_saves`) |
+| Mister | Gerenciamento de futebol: Brasileirão Série A (20 clubes, dados de demonstração em `mister/data/serieA.js`), lesões e cartões, caixa, transferências, contratos, subida e descida; carreira salva no aparelho ou na conta (`career_saves`) |
 | Cobrinha, Memória, Acerte o Alvo, Simon | 10 níveis cada; menor tempo (s) por nível; estrutura comum em `js/kit.js` |
 
 Os níveis são liberados em ordem: só se avança depois de concluir o anterior.
