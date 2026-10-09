@@ -9,12 +9,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/auth.css">
 </head>
 <body>
   <header class="site">
     <div class="container">
       <a href="/" class="logo pixel">Joga<span>í</span></a>
-      <a href="/" class="back">← Todos os jogos</a>
+      <div class="header-right">
+        <a href="/" class="back">← Todos os jogos</a>
+        <div id="account"></div>
+      </div>
     </div>
   </header>
 
@@ -32,10 +36,8 @@
 
       <div class="submit-box" id="submit-box" hidden>
         <h3 class="pixel">Salvar no ranking</h3>
-        <form id="submit-form">
-          <input id="player-name" type="text" maxlength="20" placeholder="Seu nome ou apelido" autocomplete="nickname" required>
-          <button class="btn" id="submit-btn" type="submit">Enviar</button>
-        </form>
+        <p class="submit-info" id="submit-info"></p>
+        <button class="btn" id="submit-btn" type="button">Salvar no ranking</button>
         <div class="msg" id="submit-msg"></div>
       </div>
     </section>

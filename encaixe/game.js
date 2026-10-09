@@ -1,5 +1,6 @@
 import { getRanking, saveScore } from "/js/supabase.js";
 import { initAudio, sfx, isMuted, setMuted } from "/js/sound.js";
+import { onAuthChange, openAuth } from "/js/account.js";
 import { CHALLENGES } from "/encaixe/challenges.js";
 import {
   ROWS, COLS, BOARD, NAMES,
@@ -19,10 +20,9 @@ const levelLabel = $("level-label");
 const rankLevel = $("rank-level");
 const rankingList = $("ranking-list");
 const submitBox = $("submit-box");
-const submitForm = $("submit-form");
+const submitInfo = $("submit-info");
 const submitBtn = $("submit-btn");
 const submitMsg = $("submit-msg");
-const nameInput = $("player-name");
 const winTitle = $("win-title");
 const winActions = $("win-actions");
 const levelsEl = $("levels");
@@ -39,8 +39,6 @@ let startTime = 0;
 let timerId = null;
 let finalSeconds = null;
 let alreadySaved = false;
-
-try { nameInput.value = localStorage.getItem("jogai_name") || ""; } catch (_) {}
 
 function loadDone() {
   try { return JSON.parse(localStorage.getItem("jogai_encaixe_done") || "[]"); } catch (_) { return []; }
@@ -250,7 +248,7 @@ function checkWin() {
   submitMsg.textContent = "";
   submitMsg.className = "msg";
   alreadySaved = false;
-  nameInput.focus({ preventScroll: true });
+  renderSubmit();
 }
 
 function startLevel(n) {
@@ -303,19 +301,36 @@ document.addEventListener("keydown", (e) => {
 });
 
 // ---------- ranking ----------
-submitForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+let authUser = null;
+let authNick = null;
+onAuthChange(({ user, nickname }) => {
+  authUser = user;
+  authNick = nickname;
+  renderSubmit();
+});
+
+function renderSubmit() {
+  if (alreadySaved) return;
+  if (authUser) {
+    submitInfo.textContent = `Seu tempo será salvo como ${authNick || "jogador"}.`;
+    submitBtn.textContent = "Salvar no ranking";
+  } else {
+    submitInfo.textContent = "Entre na sua conta para salvar seu tempo no ranking.";
+    submitBtn.textContent = "Entrar para salvar";
+  }
+}
+
+submitBtn.addEventListener("click", async () => {
   if (finalSeconds === null || alreadySaved) return;
-  const name = nameInput.value.trim();
-  if (!name) return;
+  if (!authUser) { openAuth("login"); return; }
 
   submitBtn.disabled = true;
   submitMsg.className = "msg";
   submitMsg.textContent = "Salvando...";
   try {
-    await saveScore(GAME, name, finalSeconds, level);
-    try { localStorage.setItem("jogai_name", name); } catch (_) {}
+    await saveScore(GAME, finalSeconds, level);
     alreadySaved = true;
+    submitInfo.textContent = "Tempo salvo no ranking.";
     initAudio();
     sfx.saved();
     submitMsg.className = "msg ok";

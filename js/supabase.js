@@ -1,35 +1,37 @@
-// Configuração pública do Supabase (a chave publishable pode ficar no front-end;
-// quem protege os dados são as políticas RLS da tabela "scores").
+// Cliente do Supabase (login + banco).
+// A chave publishable pode ficar no front-end: quem protege os dados são as
+// políticas RLS das tabelas.
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
 const SUPABASE_URL = "https://tzmyoraisebwakdzplaw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_1LqhQVDViiXzujdv4yy1HQ_5qTvNDYW";
 
-const headers = {
-  apikey: SUPABASE_KEY,
-  Authorization: `Bearer ${SUPABASE_KEY}`,
-  "Content-Type": "application/json",
-};
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+});
 
-// Busca o top N de um jogo. `ascending = true` quando menor é melhor (ex.: tempo).
+// Top N de um jogo (só o melhor resultado de cada jogador).
+// `ascending = true` quando menor é melhor (ex.: tempo).
 // `level` é opcional (jogos com várias fases, como o Encaixe).
 export async function getRanking(game, { ascending = true, limit = 10, level = null } = {}) {
-  const order = ascending ? "score.asc" : "score.desc";
-  const levelFilter = level !== null ? `&level=eq.${encodeURIComponent(level)}` : "";
-  const url =
-    `${SUPABASE_URL}/rest/v1/scores?game=eq.${encodeURIComponent(game)}${levelFilter}` +
-    `&select=player_name,score,created_at&order=${order},created_at.asc&limit=${limit}`;
-  const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error("Não foi possível carregar o ranking.");
-  return res.json();
+  let q = supabase.from("ranking").select("player_name,score,created_at").eq("game", game);
+  if (level !== null) q = q.eq("level", level);
+  const { data, error } = await q
+    .order("score", { ascending })
+    .order("created_at", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error("Não foi possível carregar o ranking.");
+  return data;
 }
 
-// Salva uma pontuação.
-export async function saveScore(game, playerName, score, level = null) {
-  const body = { game, player_name: playerName.trim(), score };
-  if (level !== null) body.level = level;
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
-    method: "POST",
-    headers: { ...headers, Prefer: "return=minimal" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error("Não foi possível salvar sua pontuação.");
+// Salva uma pontuação do jogador logado.
+// O nome e o dono vêm do servidor (apelido do perfil), não daqui.
+export async function saveScore(game, score, level = null) {
+  const row = { game, score };
+  if (level !== null) row.level = level;
+  const { error } = await supabase.from("scores").insert(row);
+  if (error) {
+    if (error.code === "42501") throw new Error("Entre na sua conta para salvar no ranking.");
+    throw new Error("Não foi possível salvar sua pontuação.");
+  }
 }

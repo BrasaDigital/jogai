@@ -1,5 +1,6 @@
 import { getRanking, saveScore } from "/js/supabase.js";
 import { initAudio, sfx, isMuted, setMuted } from "/js/sound.js";
+import { onAuthChange, openAuth } from "/js/account.js";
 
 const GAME = "reflexo";
 const TOTAL_ROUNDS = 3;
@@ -11,10 +12,9 @@ const titleEl = document.getElementById("arena-title");
 const subEl = document.getElementById("arena-sub");
 const roundsEl = document.getElementById("rounds");
 const submitBox = document.getElementById("submit-box");
-const submitForm = document.getElementById("submit-form");
+const submitInfo = document.getElementById("submit-info");
 const submitBtn = document.getElementById("submit-btn");
 const submitMsg = document.getElementById("submit-msg");
-const nameInput = document.getElementById("player-name");
 const rankingList = document.getElementById("ranking-list");
 
 let state = "idle"; // idle | waiting | go | result | fail | finished
@@ -23,8 +23,6 @@ let startTime = 0;
 let times = [];
 let finalScore = null;
 let alreadySaved = false;
-
-try { nameInput.value = localStorage.getItem("jogai_name") || ""; } catch (_) {}
 
 function setState(next, title, sub) {
   state = next;
@@ -90,7 +88,7 @@ function handleClick() {
     sfx.win();
     setState("finished", `Média: ${finalScore} ms`, `Rodadas: ${times.join(" · ")} ms — clique para jogar de novo`);
     submitBox.hidden = false;
-    nameInput.focus({ preventScroll: true });
+    renderSubmit();
     return;
   }
 
@@ -113,19 +111,36 @@ arena.addEventListener("keydown", (e) => {
   }
 });
 
-submitForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+let authUser = null;
+let authNick = null;
+onAuthChange(({ user, nickname }) => {
+  authUser = user;
+  authNick = nickname;
+  renderSubmit();
+});
+
+function renderSubmit() {
+  if (alreadySaved) return;
+  if (authUser) {
+    submitInfo.textContent = `Sua nota será salva como ${authNick || "jogador"}.`;
+    submitBtn.textContent = "Salvar no ranking";
+  } else {
+    submitInfo.textContent = "Entre na sua conta para salvar sua nota no ranking.";
+    submitBtn.textContent = "Entrar para salvar";
+  }
+}
+
+submitBtn.addEventListener("click", async () => {
   if (finalScore === null || alreadySaved) return;
-  const name = nameInput.value.trim();
-  if (!name) return;
+  if (!authUser) { openAuth("login"); return; }
 
   submitBtn.disabled = true;
   submitMsg.className = "msg";
   submitMsg.textContent = "Salvando...";
   try {
-    await saveScore(GAME, name, finalScore);
-    try { localStorage.setItem("jogai_name", name); } catch (_) {}
+    await saveScore(GAME, finalScore);
     alreadySaved = true;
+    submitInfo.textContent = "Nota salva no ranking.";
     initAudio();
     sfx.saved();
     submitMsg.className = "msg ok";
