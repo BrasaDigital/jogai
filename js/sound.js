@@ -38,6 +38,11 @@ function tone(freq, start, dur, { type = "square", vol = 0.12, endFreq = null } 
   osc.stop(t0 + dur + 0.02);
 }
 
+// nota solta (Simon)
+export function note(freq, seconds = 0.3) {
+  tone(freq, 0, seconds, { type: "triangle", vol: 0.2 });
+}
+
 export const sfx = {
   // começo da espera (tensão)
   wait() { tone(220, 0, 0.12, { type: "triangle", vol: 0.1 }); },

@@ -6,11 +6,11 @@ import { supabase } from "/js/supabase.js";
 import { onAuthChange } from "/js/account.js";
 import { isUnlocked as unlocked, firstOpen as open } from "/js/levels.js";
 
-const GAMES = ["reflexo", "encaixe"];
+const GAMES = ["reflexo", "encaixe", "cobrinha", "memoria", "alvo", "simon"];
 const GUEST_KEY = "jogai_progress_guest";
 const LEGACY_ENCAIXE = "jogai_encaixe_done"; // chave da versão anterior do Encaixe
 
-const emptySets = () => ({ reflexo: new Set(), encaixe: new Set() });
+const emptySets = () => Object.fromEntries(GAMES.map((g) => [g, new Set()]));
 
 let done = emptySets();
 let uid = null;
@@ -31,10 +31,9 @@ function loadGuest() {
 
 function saveGuest(sets) {
   try {
-    localStorage.setItem(GUEST_KEY, JSON.stringify({
-      reflexo: [...sets.reflexo],
-      encaixe: [...sets.encaixe],
-    }));
+    localStorage.setItem(GUEST_KEY, JSON.stringify(
+      Object.fromEntries(GAMES.map((g) => [g, [...sets[g]]]))
+    ));
     localStorage.removeItem(LEGACY_ENCAIXE);
   } catch (_) {}
 }

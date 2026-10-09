@@ -20,6 +20,7 @@ reflexo/            jogo Teste de Reflexo
 |------|---------|
 | Teste de Reflexo | 10 níveis; passa quem fica dentro da meta de média (ms); ranking por nível |
 | Encaixe | 40 desafios com solução única; menor tempo (s) por desafio |
+| Cobrinha, Memória, Acerte o Alvo, Simon | 10 níveis cada; menor tempo (s) por nível; estrutura comum em `js/kit.js` |
 
 Os níveis são liberados em ordem: só se avança depois de concluir o anterior.
 O progresso fica no aparelho (sem login) ou na conta (tabela `progress`).

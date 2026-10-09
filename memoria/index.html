@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jogo da Memória — Jogaí</title>
+  <meta name="description" content="Encontre todos os pares no menor tempo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/levels.css">
+  <link rel="stylesheet" href="/css/games.css">
+</head>
+<body>
+  <header class="site">
+    <div class="container">
+      <a href="/" class="logo pixel">Joga<span>í</span></a>
+      <div class="header-right">
+        <a href="/" class="back">← Todos os jogos</a>
+        <div id="account"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container game-layout">
+    <section>
+      <h1 class="game-title pixel">🧠 Jogo da Memória</h1>
+      <p class="game-sub">Vire duas cartas por vez e encontre todos os pares. A cada nível, mais cartas e menos tempo para olhar.</p>
+
+      <div class="toolbar">
+        <button class="btn ghost mute-btn" id="mute-btn" type="button" aria-pressed="false">🔊 Som ligado</button>
+        <button class="btn ghost mute-btn" id="restart-btn" type="button">↺ Recomeçar</button>
+        <span class="spacer"></span>
+        <span class="level-label" id="level-label">Nível 1</span>
+        <span class="timer pixel" id="timer">00:00</span>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="hud"><span>Pares: <b id="hud-a">0</b> / <b id="hud-g">0</b></span></div>
+        <div class="mem-grid" id="mem-grid"></div>
+        <div class="overlay" id="overlay">
+          <div class="pixel" id="overlay-title">Nível 1</div>
+          <p id="overlay-text"></p>
+          <button class="btn" id="start-btn" type="button">Começar</button>
+        </div>
+      </div>
+
+      <div class="submit-box" id="submit-box" hidden>
+        <h3 class="pixel" id="win-title">Nível concluído!</h3>
+        <p class="submit-info" id="submit-info"></p>
+        <button class="btn" id="submit-btn" type="button">Salvar no ranking</button>
+        <div class="msg" id="submit-msg"></div>
+        <div class="win-actions" id="win-actions" hidden>
+          <button class="btn ghost" id="next-btn" type="button">Próximo nível →</button>
+        </div>
+      </div>
+
+      <h2 class="levels-title pixel">Níveis</h2>
+      <div class="levels" id="levels"></div>
+      <p class="levels-hint">Conclua um nível para liberar o próximo.</p>
+    </section>
+
+    <aside class="ranking">
+      <h2 class="pixel">🏆 Top 10 · <span id="rank-level">Nível 1</span></h2>
+      <ol id="ranking-list"><li class="empty">Carregando...</li></ol>
+    </aside>
+  </main>
+
+  <footer class="site">
+    <div class="container">Jogaí © 2026 · feito pela Brasa Digital</div>
+  </footer>
+
+  <script type="module" src="/memoria/game.js"></script>
+</body>
+</html>
