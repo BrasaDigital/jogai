@@ -57,6 +57,13 @@ export const sfx = {
       tone(f, i * 0.1, 0.18, { type: "square", vol: 0.12 })
     );
   },
+  // toque leve (selecionar, girar)
+  tick() { tone(520, 0, 0.04, { type: "triangle", vol: 0.08 }); },
+  // peça encaixada
+  place() {
+    tone(330, 0, 0.07, { type: "triangle", vol: 0.14 });
+    tone(495, 0.06, 0.09, { type: "triangle", vol: 0.12 });
+  },
   // pontuação salva
   saved() {
     tone(660, 0, 0.1, { type: "triangle", vol: 0.14 });

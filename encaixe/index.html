@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Encaixe — Jogaí</title>
+  <meta name="description" content="Quebra-cabeça de encaixe: cubra o tabuleiro inteiro com as peças. Ranking por tempo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/encaixe.css">
+</head>
+<body>
+  <header class="site">
+    <div class="container">
+      <a href="/" class="logo pixel">Joga<span>í</span></a>
+      <a href="/" class="back">← Todos os jogos</a>
+    </div>
+  </header>
+
+  <main class="container game-layout">
+    <section>
+      <h1 class="game-title pixel">🧩 Encaixe</h1>
+      <p class="game-sub">Cubra o tabuleiro inteiro com as 12 peças. Cada furo só encaixa sobre a forma igual (círculo, cruz ou quadrado). As peças giram, mas não viram.</p>
+
+      <div class="toolbar">
+        <button class="btn ghost mute-btn" id="mute-btn" type="button" aria-pressed="false">🔊 Som ligado</button>
+        <button class="btn ghost mute-btn" id="restart-btn" type="button">↺ Recomeçar</button>
+        <span class="spacer"></span>
+        <span class="level-label" id="level-label">Desafio 1</span>
+        <span class="timer pixel" id="timer">00:00</span>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="board" id="board" aria-label="Tabuleiro"></div>
+
+        <div class="tray-wrap">
+          <div class="tray" id="tray"></div>
+          <div class="tray-actions">
+            <button class="btn ghost" id="rotate-btn" type="button">↻ Girar (R)</button>
+          </div>
+          <p class="help">Toque numa peça para escolher, depois toque no tabuleiro: a casa tocada recebe o pontinho branco da peça. Toque numa peça já colocada para tirá-la.</p>
+        </div>
+
+        <div class="overlay" id="overlay">
+          <div class="pixel" id="overlay-title">Desafio 1</div>
+          <p>O cronômetro começa quando você clicar. Boa sorte!</p>
+          <button class="btn" id="start-btn" type="button">Começar</button>
+        </div>
+      </div>
+
+      <div class="submit-box" id="submit-box" hidden>
+        <h3 class="pixel" id="win-title">Completou!</h3>
+        <form id="submit-form">
+          <input id="player-name" type="text" maxlength="20" placeholder="Seu nome ou apelido" autocomplete="nickname" required>
+          <button class="btn" id="submit-btn" type="submit">Enviar</button>
+        </form>
+        <div class="msg" id="submit-msg"></div>
+        <div class="win-actions" id="win-actions" hidden>
+          <button class="btn ghost" id="next-btn" type="button">Próximo desafio →</button>
+        </div>
+      </div>
+
+      <h2 class="levels-title pixel">Desafios</h2>
+      <div class="levels" id="levels"></div>
+    </section>
+
+    <aside class="ranking">
+      <h2 class="pixel">🏆 Top 10 · <span id="rank-level">Desafio 1</span></h2>
+      <ol id="ranking-list"><li class="empty">Carregando...</li></ol>
+    </aside>
+  </main>
+
+  <footer class="site">
+    <div class="container">Jogaí © 2026 · feito pela Brasa Digital</div>
+  </footer>
+
+  <script type="module" src="/encaixe/game.js"></script>
+</body>
+</html>

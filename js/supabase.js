@@ -10,10 +10,12 @@ const headers = {
 };
 
 // Busca o top N de um jogo. `ascending = true` quando menor é melhor (ex.: tempo).
-export async function getRanking(game, { ascending = true, limit = 10 } = {}) {
+// `level` é opcional (jogos com várias fases, como o Encaixe).
+export async function getRanking(game, { ascending = true, limit = 10, level = null } = {}) {
   const order = ascending ? "score.asc" : "score.desc";
+  const levelFilter = level !== null ? `&level=eq.${encodeURIComponent(level)}` : "";
   const url =
-    `${SUPABASE_URL}/rest/v1/scores?game=eq.${encodeURIComponent(game)}` +
+    `${SUPABASE_URL}/rest/v1/scores?game=eq.${encodeURIComponent(game)}${levelFilter}` +
     `&select=player_name,score,created_at&order=${order},created_at.asc&limit=${limit}`;
   const res = await fetch(url, { headers });
   if (!res.ok) throw new Error("Não foi possível carregar o ranking.");
@@ -21,11 +23,13 @@ export async function getRanking(game, { ascending = true, limit = 10 } = {}) {
 }
 
 // Salva uma pontuação.
-export async function saveScore(game, playerName, score) {
+export async function saveScore(game, playerName, score, level = null) {
+  const body = { game, player_name: playerName.trim(), score };
+  if (level !== null) body.level = level;
   const res = await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
     method: "POST",
     headers: { ...headers, Prefer: "return=minimal" },
-    body: JSON.stringify({ game, player_name: playerName.trim(), score }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error("Não foi possível salvar sua pontuação.");
 }

@@ -19,6 +19,7 @@ reflexo/            jogo Teste de Reflexo
 | Jogo | Ranking |
 |------|---------|
 | Teste de Reflexo | menor tempo médio (ms) |
+| Encaixe | menor tempo (s) por desafio (40 desafios com solução única) |
 
 ## Como adicionar um novo jogo
 
