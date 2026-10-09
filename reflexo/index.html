@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Teste de Reflexo — Jogaí</title>
+  <meta name="description" content="Teste seu tempo de reação e entre para o ranking do Jogaí.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site">
+    <div class="container">
+      <a href="/" class="logo pixel">Joga<span>í</span></a>
+      <a href="/" class="back">← Todos os jogos</a>
+    </div>
+  </header>
+
+  <main class="container game-layout">
+    <section>
+      <h1 class="game-title pixel">⚡ Teste de Reflexo</h1>
+      <p class="game-sub">3 rodadas. Espere a tela ficar verde e clique o mais rápido que puder. Sua nota é a média.</p>
+
+      <div id="arena" class="idle" role="button" tabindex="0" aria-live="polite">
+        <div class="big pixel" id="arena-title">Clique para começar</div>
+        <div class="small" id="arena-sub">Toque ou clique em qualquer lugar da área</div>
+        <div class="rounds" id="rounds"></div>
+      </div>
+
+      <div class="submit-box" id="submit-box" hidden>
+        <h3 class="pixel">Salvar no ranking</h3>
+        <form id="submit-form">
+          <input id="player-name" type="text" maxlength="20" placeholder="Seu nome ou apelido" autocomplete="nickname" required>
+          <button class="btn" id="submit-btn" type="submit">Enviar</button>
+        </form>
+        <div class="msg" id="submit-msg"></div>
+      </div>
+    </section>
+
+    <aside class="ranking">
+      <h2 class="pixel">🏆 Top 10</h2>
+      <ol id="ranking-list"><li class="empty">Carregando...</li></ol>
+    </aside>
+  </main>
+
+  <footer class="site">
+    <div class="container">Jogaí © 2026 · feito pela Brasa Digital</div>
+  </footer>
+
+  <script type="module" src="/reflexo/game.js"></script>
+</body>
+</html>
