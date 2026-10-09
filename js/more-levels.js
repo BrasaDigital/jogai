@@ -26,6 +26,7 @@ export function mountMoreLevels(game) {
 
   onAuthChange(async ({ user: u }) => {
     user = u;
+    hint.textContent = u ? "Conclua um nível para liberar o próximo." : "Sem conta, você joga só os 3 primeiros níveis. Entre para liberar todos.";
     asked = false;
     render();
     if (!u) return;

@@ -7,6 +7,7 @@ import { onAuthChange } from "/js/account.js";
 import { isUnlocked as unlocked, firstOpen as open } from "/js/levels.js";
 
 const GAMES = ["reflexo", "encaixe", "cobrinha", "memoria", "alvo", "simon"];
+export const GUEST_MAX = 3; // sem conta, só os 3 primeiros níveis
 const GUEST_KEY = "jogai_progress_guest";
 const LEGACY_ENCAIXE = "jogai_encaixe_done"; // chave da versão anterior do Encaixe
 
@@ -82,8 +83,9 @@ export function onProgress(cb) {
 }
 
 export const isDone = (game, level) => done[game].has(level);
-export const isUnlocked = (game, level) => unlocked(done[game], level);
-export const firstOpen = (game, max) => open(done[game], max);
+export const needsLogin = (level) => !uid && level > GUEST_MAX;
+export const isUnlocked = (game, level) => !needsLogin(level) && unlocked(done[game], level);
+export const firstOpen = (game, max) => open(done[game], uid ? max : Math.min(max, GUEST_MAX));
 
 export async function completeLevel(game, level) {
   done[game].add(level);

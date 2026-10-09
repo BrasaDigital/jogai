@@ -5,7 +5,7 @@ import { getRanking, saveScore } from "/js/supabase.js";
 import { initAudio, sfx, isMuted, setMuted } from "/js/sound.js";
 import { onAuthChange, openAuth } from "/js/account.js";
 import { mountMoreLevels } from "/js/more-levels.js";
-import { onProgress, isDone, isUnlocked, firstOpen, completeLevel } from "/js/progress.js";
+import { needsLogin, onProgress, isDone, isUnlocked, firstOpen, completeLevel } from "/js/progress.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -125,7 +125,10 @@ export function createKit({ game, total, goalText, onSelect, onBegin, onStop }) 
       box.appendChild(b);
     }
   }
-  $("next-btn").addEventListener("click", () => { userPicked = true; initAudio(); sfx.tick(); select(level + 1); });
+  $("next-btn").addEventListener("click", () => {
+    if (needsLogin(level + 1)) return openAuth("login");
+    userPicked = true; initAudio(); sfx.tick(); select(level + 1);
+  });
   $("restart-btn").addEventListener("click", () => { initAudio(); sfx.tick(); select(level); });
 
   // ---------- ranking ----------

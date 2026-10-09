@@ -2,7 +2,7 @@ import { getRanking, saveScore } from "/js/supabase.js";
 import { initAudio, sfx, isMuted, setMuted } from "/js/sound.js";
 import { onAuthChange, openAuth } from "/js/account.js";
 import { mountMoreLevels } from "/js/more-levels.js";
-import { onProgress, isDone, isUnlocked, firstOpen, completeLevel } from "/js/progress.js";
+import { needsLogin, onProgress, isDone, isUnlocked, firstOpen, completeLevel } from "/js/progress.js";
 import { LEVELS, targetOf, passed } from "/reflexo/levels.js";
 
 const GAME = "reflexo";
@@ -188,6 +188,7 @@ function startLevel(n) {
 $("next-btn").addEventListener("click", () => {
   userPicked = true;
   initAudio();
+  if (needsLogin(level + 1)) return openAuth("login");
   sfx.tick();
   startLevel(level + 1);
 });

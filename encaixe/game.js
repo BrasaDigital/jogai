@@ -2,7 +2,7 @@ import { getRanking, saveScore } from "/js/supabase.js";
 import { initAudio, sfx, isMuted, setMuted } from "/js/sound.js";
 import { onAuthChange, openAuth } from "/js/account.js";
 import { mountMoreLevels } from "/js/more-levels.js";
-import { onProgress, isDone, isUnlocked, firstOpen, completeLevel } from "/js/progress.js";
+import { needsLogin, onProgress, isDone, isUnlocked, firstOpen, completeLevel } from "/js/progress.js";
 import { CHALLENGES } from "/encaixe/challenges.js";
 import {
   ROWS, COLS, BOARD, NAMES,
@@ -297,6 +297,7 @@ $("rotate-btn").addEventListener("click", rotateSelected);
 $("next-btn").addEventListener("click", () => {
   userPicked = true;
   initAudio();
+  if (needsLogin(level + 1)) return openAuth("login");
   sfx.tick();
   startLevel(level + 1);
 });
