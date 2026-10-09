@@ -1,6 +1,7 @@
 import { getRanking, saveScore } from "/js/supabase.js";
 import { initAudio, sfx, isMuted, setMuted } from "/js/sound.js";
 import { onAuthChange, openAuth } from "/js/account.js";
+import { onProgress, isDone, isUnlocked, firstOpen, completeLevel } from "/js/progress.js";
 import { CHALLENGES } from "/encaixe/challenges.js";
 import {
   ROWS, COLS, BOARD, NAMES,
@@ -39,17 +40,6 @@ let startTime = 0;
 let timerId = null;
 let finalSeconds = null;
 let alreadySaved = false;
-
-function loadDone() {
-  try { return JSON.parse(localStorage.getItem("jogai_encaixe_done") || "[]"); } catch (_) { return []; }
-}
-function markDone(n) {
-  const done = loadDone();
-  if (!done.includes(n)) {
-    done.push(n);
-    try { localStorage.setItem("jogai_encaixe_done", JSON.stringify(done)); } catch (_) {}
-  }
-}
 
 // ---------- desenho ----------
 function pieceColor(name) {
@@ -151,14 +141,24 @@ function renderTray() {
 }
 
 function renderLevels() {
-  const done = loadDone();
   levelsEl.innerHTML = "";
   CHALLENGES.forEach((ch) => {
+    const open = isUnlocked(GAME, ch.id);
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "lv" + (done.includes(ch.id) ? " done" : "") + (ch.id === level ? " cur" : "");
-    b.textContent = ch.id;
-    b.addEventListener("click", () => { initAudio(); sfx.tick(); startLevel(ch.id); });
+    b.className = "lv"
+      + (isDone(GAME, ch.id) ? " done" : "")
+      + (ch.id === level ? " cur" : "")
+      + (open ? "" : " locked");
+    b.textContent = open ? String(ch.id) : "🔒";
+    b.disabled = !open;
+    b.setAttribute("aria-label", open ? `Desafio ${ch.id}` : `Desafio ${ch.id} bloqueado`);
+    b.addEventListener("click", () => {
+      userPicked = true;
+      initAudio();
+      sfx.tick();
+      startLevel(ch.id);
+    });
     levelsEl.appendChild(b);
   });
 }
@@ -238,7 +238,7 @@ function checkWin() {
   const elapsed = (performance.now() - startTime) / 1000;
   finalSeconds = Math.max(5, Math.round(elapsed));
   timerEl.textContent = formatTime(finalSeconds);
-  markDone(level);
+  completeLevel(GAME, level); // libera o próximo desafio
   renderLevels();
   sfx.win();
   winTitle.textContent = `🎉 Completou em ${formatTime(finalSeconds)}!`;
@@ -252,7 +252,8 @@ function checkWin() {
 }
 
 function startLevel(n) {
-  level = n;
+  // desafio bloqueado: vai para o primeiro que ainda não foi concluído
+  if (!isUnlocked(GAME, n)) n = firstOpen(GAME, CHALLENGES.length);
   const ch = CHALLENGES.find((c) => c.id === n) || CHALLENGES[0];
   level = ch.id;
   try { history.replaceState(null, "", `#${level}`); } catch (_) {}
@@ -292,7 +293,12 @@ function begin() {
 $("start-btn").addEventListener("click", begin);
 $("restart-btn").addEventListener("click", () => { initAudio(); sfx.tick(); startLevel(level); });
 $("rotate-btn").addEventListener("click", rotateSelected);
-$("next-btn").addEventListener("click", () => { initAudio(); sfx.tick(); startLevel(level + 1); });
+$("next-btn").addEventListener("click", () => {
+  userPicked = true;
+  initAudio();
+  sfx.tick();
+  startLevel(level + 1);
+});
 
 document.addEventListener("keydown", (e) => {
   if (e.target instanceof HTMLInputElement) return;
@@ -397,4 +403,13 @@ renderMute();
 // ---------- início ----------
 buildBoard();
 const fromHash = parseInt(location.hash.slice(1), 10);
+let userPicked = Number.isFinite(fromHash);
 startLevel(Number.isFinite(fromHash) ? fromHash : 1);
+
+onProgress(() => {
+  renderLevels();
+  // o progresso da conta chega depois da página abrir: leva ao primeiro desafio em aberto
+  const untouched = !running && finalSeconds === null && Object.keys(placed).length === 0;
+  const target = firstOpen(GAME, CHALLENGES.length);
+  if (!userPicked && untouched && target !== level) startLevel(target);
+});

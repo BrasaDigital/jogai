@@ -4,12 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Teste de Reflexo — Jogaí</title>
-  <meta name="description" content="Teste seu tempo de reação e entre para o ranking do Jogaí.">
+  <meta name="description" content="Teste seu tempo de reação, passe de nível e entre para o ranking do Jogaí.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/levels.css">
 </head>
 <body>
   <header class="site">
@@ -25,8 +26,13 @@
   <main class="container game-layout">
     <section>
       <h1 class="game-title pixel">⚡ Teste de Reflexo</h1>
-      <p class="game-sub">3 rodadas. Espere a tela ficar verde e clique o mais rápido que puder. Sua nota é a média.</p>
-      <button class="btn ghost mute-btn" id="mute-btn" type="button" aria-pressed="false">🔊 Som ligado</button>
+      <p class="game-sub">3 rodadas por nível. Espere a tela ficar verde e clique o mais rápido que puder. Para passar, sua média precisa ficar dentro da meta do nível.</p>
+
+      <div class="toolbar">
+        <button class="btn ghost mute-btn" id="mute-btn" type="button" aria-pressed="false">🔊 Som ligado</button>
+        <span class="spacer"></span>
+        <span class="level-label" id="level-label">Nível 1</span>
+      </div>
 
       <div id="arena" class="idle" role="button" tabindex="0" aria-live="polite">
         <div class="big pixel" id="arena-title">Clique para começar</div>
@@ -35,15 +41,22 @@
       </div>
 
       <div class="submit-box" id="submit-box" hidden>
-        <h3 class="pixel">Salvar no ranking</h3>
+        <h3 class="pixel" id="win-title">Nível concluído!</h3>
         <p class="submit-info" id="submit-info"></p>
         <button class="btn" id="submit-btn" type="button">Salvar no ranking</button>
         <div class="msg" id="submit-msg"></div>
+        <div class="win-actions" id="win-actions" hidden>
+          <button class="btn ghost" id="next-btn" type="button">Próximo nível →</button>
+        </div>
       </div>
+
+      <h2 class="levels-title pixel">Níveis</h2>
+      <div class="levels" id="levels"></div>
+      <p class="levels-hint">Passe de nível para liberar o próximo.</p>
     </section>
 
     <aside class="ranking">
-      <h2 class="pixel">🏆 Top 10</h2>
+      <h2 class="pixel">🏆 Top 10 · <span id="rank-level">Nível 1</span></h2>
       <ol id="ranking-list"><li class="empty">Carregando...</li></ol>
     </aside>
   </main>

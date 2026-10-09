@@ -1,32 +1,41 @@
 import { getRanking, saveScore } from "/js/supabase.js";
 import { initAudio, sfx, isMuted, setMuted } from "/js/sound.js";
 import { onAuthChange, openAuth } from "/js/account.js";
+import { onProgress, isDone, isUnlocked, firstOpen, completeLevel } from "/js/progress.js";
+import { LEVELS, targetOf, passed } from "/reflexo/levels.js";
 
 const GAME = "reflexo";
 const TOTAL_ROUNDS = 3;
 const MIN_WAIT = 1500;
 const MAX_WAIT = 4000;
 
-const arena = document.getElementById("arena");
-const titleEl = document.getElementById("arena-title");
-const subEl = document.getElementById("arena-sub");
-const roundsEl = document.getElementById("rounds");
-const submitBox = document.getElementById("submit-box");
-const submitInfo = document.getElementById("submit-info");
-const submitBtn = document.getElementById("submit-btn");
-const submitMsg = document.getElementById("submit-msg");
-const rankingList = document.getElementById("ranking-list");
+const $ = (id) => document.getElementById(id);
+const arena = $("arena");
+const titleEl = $("arena-title");
+const subEl = $("arena-sub");
+const roundsEl = $("rounds");
+const submitBox = $("submit-box");
+const submitInfo = $("submit-info");
+const submitBtn = $("submit-btn");
+const submitMsg = $("submit-msg");
+const winTitle = $("win-title");
+const winActions = $("win-actions");
+const levelLabel = $("level-label");
+const rankLevel = $("rank-level");
+const rankingList = $("ranking-list");
+const levelsEl = $("levels");
 
-let state = "idle"; // idle | waiting | go | result | fail | finished
+let level = 1;
+let state = "idle"; // idle | waiting | go | result | fail | finished | missed
 let timer = null;
 let startTime = 0;
 let times = [];
-let finalScore = null;
+let finalScore = null; // só existe quando o nível foi concluído
 let alreadySaved = false;
 
 function setState(next, title, sub) {
   state = next;
-  arena.className = next === "finished" ? "result" : next;
+  arena.className = next === "finished" ? "result" : next === "missed" ? "fail" : next;
   titleEl.textContent = title;
   subEl.textContent = sub || "";
   renderDots();
@@ -64,8 +73,35 @@ function resetGame() {
   startRound();
 }
 
+function finishLevel() {
+  const avg = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+  const rounds = `Rodadas: ${times.join(" · ")} ms`;
+
+  if (!passed(level, avg)) {
+    finalScore = null;
+    sfx.fail();
+    setState("missed", `Média: ${avg} ms`,
+      `Faltou pouco: a meta do nível ${level} é até ${targetOf(level)} ms. ${rounds} — clique para tentar de novo`);
+    return;
+  }
+
+  finalScore = avg;
+  sfx.win();
+  completeLevel(GAME, level); // libera o próximo nível
+  renderLevels();
+  setState("finished", `Nível ${level} concluído! ${avg} ms`, `${rounds} — clique para jogar este nível de novo`);
+  winTitle.textContent = level >= LEVELS ? "🏆 Você zerou o jogo!" : `🎉 Nível ${level} concluído!`;
+  submitBox.hidden = false;
+  winActions.hidden = level >= LEVELS;
+  submitBtn.disabled = false;
+  submitMsg.textContent = "";
+  submitMsg.className = "msg";
+  alreadySaved = false;
+  renderSubmit();
+}
+
 function handleClick() {
-  initAudio(); // o navegador só libera o som depois de um clique
+  initAudio();
 
   if (state === "idle") return resetGame();
 
@@ -84,20 +120,12 @@ function handleClick() {
       sfx.hit(ms);
       return setState("result", `${ms} ms`, "Clique para a próxima rodada");
     }
-    finalScore = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
-    sfx.win();
-    setState("finished", `Média: ${finalScore} ms`, `Rodadas: ${times.join(" · ")} ms — clique para jogar de novo`);
-    submitBox.hidden = false;
-    renderSubmit();
-    return;
+    return finishLevel();
   }
 
   if (state === "result") return startRound();
 
-  if (state === "finished") {
-    times = [];
-    return resetGame();
-  }
+  if (state === "finished" || state === "missed") return resetGame();
 }
 
 arena.addEventListener("pointerdown", (e) => {
@@ -111,6 +139,59 @@ arena.addEventListener("keydown", (e) => {
   }
 });
 
+// ---------- níveis ----------
+function renderLevels() {
+  levelsEl.innerHTML = "";
+  for (let n = 1; n <= LEVELS; n++) {
+    const open = isUnlocked(GAME, n);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "lv"
+      + (isDone(GAME, n) ? " done" : "")
+      + (n === level ? " cur" : "")
+      + (open ? "" : " locked");
+    b.textContent = open ? String(n) : "🔒";
+    b.disabled = !open;
+    b.title = `Meta: até ${targetOf(n)} ms`;
+    b.setAttribute("aria-label", open ? `Nível ${n}, meta ${targetOf(n)} ms` : `Nível ${n} bloqueado`);
+    b.addEventListener("click", () => {
+      userPicked = true;
+      initAudio();
+      sfx.tick();
+      startLevel(n);
+    });
+    levelsEl.appendChild(b);
+  }
+}
+
+function startLevel(n) {
+  // nível bloqueado: vai para o primeiro que ainda não foi concluído
+  if (!isUnlocked(GAME, n)) n = firstOpen(GAME, LEVELS);
+  level = Math.min(Math.max(n, 1), LEVELS);
+  try { history.replaceState(null, "", `#${level}`); } catch (_) {}
+
+  clearTimeout(timer);
+  times = [];
+  finalScore = null;
+  alreadySaved = false;
+  submitBox.hidden = true;
+  winActions.hidden = true;
+
+  levelLabel.textContent = `Nível ${level} de ${LEVELS} · meta: média até ${targetOf(level)} ms`;
+  rankLevel.textContent = `Nível ${level}`;
+  setState("idle", "Clique para começar", `Nível ${level}: média de até ${targetOf(level)} ms nas 3 rodadas`);
+  renderLevels();
+  loadRanking();
+}
+
+$("next-btn").addEventListener("click", () => {
+  userPicked = true;
+  initAudio();
+  sfx.tick();
+  startLevel(level + 1);
+});
+
+// ---------- ranking ----------
 let authUser = null;
 let authNick = null;
 onAuthChange(({ user, nickname }) => {
@@ -138,7 +219,7 @@ submitBtn.addEventListener("click", async () => {
   submitMsg.className = "msg";
   submitMsg.textContent = "Salvando...";
   try {
-    await saveScore(GAME, finalScore);
+    await saveScore(GAME, finalScore, level);
     alreadySaved = true;
     submitInfo.textContent = "Nota salva no ranking.";
     initAudio();
@@ -154,13 +235,16 @@ submitBtn.addEventListener("click", async () => {
 });
 
 async function loadRanking() {
+  const asked = level;
+  rankingList.innerHTML = '<li class="empty">Carregando...</li>';
   try {
-    const rows = await getRanking(GAME, { ascending: true, limit: 10 });
+    const rows = await getRanking(GAME, { ascending: true, limit: 10, level: asked });
+    if (asked !== level) return; // trocou de nível enquanto carregava
     rankingList.innerHTML = "";
     if (!rows.length) {
       const li = document.createElement("li");
       li.className = "empty";
-      li.textContent = "Ninguém no ranking ainda. Seja o primeiro!";
+      li.textContent = "Ninguém no ranking deste nível ainda. Seja o primeiro!";
       rankingList.appendChild(li);
       return;
     }
@@ -187,7 +271,8 @@ async function loadRanking() {
   }
 }
 
-const muteBtn = document.getElementById("mute-btn");
+// ---------- som ----------
+const muteBtn = $("mute-btn");
 function renderMute() {
   muteBtn.textContent = isMuted() ? "🔇 Som desligado" : "🔊 Som ligado";
   muteBtn.setAttribute("aria-pressed", String(isMuted()));
@@ -196,9 +281,19 @@ muteBtn.addEventListener("click", () => {
   initAudio();
   setMuted(!isMuted());
   renderMute();
-  if (!isMuted()) sfx.saved(); // toca um bipe para confirmar que o som voltou
+  if (!isMuted()) sfx.saved();
 });
 renderMute();
 
-renderDots();
-loadRanking();
+// ---------- início ----------
+const fromHash = parseInt(location.hash.slice(1), 10);
+let userPicked = Number.isFinite(fromHash);
+startLevel(Number.isFinite(fromHash) ? fromHash : 1);
+
+onProgress(() => {
+  renderLevels();
+  // o progresso da conta chega depois da página abrir: leva ao primeiro nível em aberto
+  const untouched = state === "idle" && times.length === 0;
+  const target = firstOpen(GAME, LEVELS);
+  if (!userPicked && untouched && target !== level) startLevel(target);
+});

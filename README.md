@@ -18,8 +18,11 @@ reflexo/            jogo Teste de Reflexo
 
 | Jogo | Ranking |
 |------|---------|
-| Teste de Reflexo | menor tempo médio (ms) |
-| Encaixe | menor tempo (s) por desafio (40 desafios com solução única) |
+| Teste de Reflexo | 10 níveis; passa quem fica dentro da meta de média (ms); ranking por nível |
+| Encaixe | 40 desafios com solução única; menor tempo (s) por desafio |
+
+Os níveis são liberados em ordem: só se avança depois de concluir o anterior.
+O progresso fica no aparelho (sem login) ou na conta (tabela `progress`).
 
 ## Como adicionar um novo jogo
 
