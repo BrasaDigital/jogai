@@ -11,9 +11,7 @@ export const SERIE_A = [
     "M Arrascaeta 84 31", "M Jorginho 75 34", "M Saúl 77 32", "M Allan 73 29", "M Carrascal 77 28", "M Evertton Araújo 71 26",
     "A Pedro 82 29", "A Bruno Henrique 76 35", "A Samuel Lino 78 26", "A Luiz Araújo 76 30", "A Gonzalo Plata 76 25" ] },
   { sigla: "PAL", nome: "Palmeiras", hue: 140, caixa: 130, forca: 77, jogadores: [
-    "G Weverton 78 38", "G Carlos Miguel 72 27", "D Gustavo Gómez 79 33", "D Murilo 77 28", "D Bruno Fuchs 75 27", "D Khellven 74 25", "D Piquerez 77 27", "D Marcos Rocha 72 37",
-    "M Aníbal Moreno 78 26", "M Raphael Veiga 77 30", "M Andreas Pereira 77 30", "M Mauricio 77 24", "M Richard Ríos 75 25", "M Emiliano Martínez 72 21",
-    "A Vitor Roque 80 21", "A Flaco López 77 25", "A Paulinho 79 26", "A Felipe Anderson 78 33", "A Ramón Sosa 74 26" ] },
+    "G Carlos Miguel 75 28", "G Marcelo Lomba 53 39", "G Bruno Bertinato 50 28", "D Murilo 72 29", "D Alexander Barboza 73 31", "D Bruno Fuchs 71 27", "D Luis Benedetti 69 20", "D Gustavo Gómez 74 33", "D Joaquín Piquerez 77 28", "D Jefté 71 22", "D Arthur Gabriel 71 21", "D Agustín Giay 76 22", "D Khellven 73 25", "M Marlon Freitas 75 31", "M Emiliano Martínez 72 27", "M Luis Pacheco 63 18", "M Andreas Pereira 78 30", "M Lucas Evangelista 73 31", "M Larson 63 21", "M Mauricio 79 25", "M Erick Belé 61 19", "A Ramón Sosa 76 27", "A Felipe Anderson 67 33", "A Jhon Arias 78 29", "A Paulinho 74 26", "A Vitor Roque 83 21", "A José Manuel López 82 25" ] },
   { sigla: "BOT", nome: "Botafogo", hue: 220, caixa: 90, forca: 72, jogadores: [
     "G John 74 29", "D Alexander Barboza 76 31", "D Bastos 72 34", "D Vitinho 72 26", "D Alex Telles 72 33", "D Cuiabano 71 23", "D Marçal 71 36",
     "M Marlon Freitas 76 30", "M Savarino 76 29", "M Allan 72 29", "M Danilo 75 25", "M Gregore 72 31",
