@@ -89,3 +89,48 @@
 .drow span:last-child { font-weight: 600; text-align: right; }
 .drow.found { background: #b8f0c9; }
 .drow.miss { background: #ffc9c9; }
+
+/* Clássicos */
+.tray-actions { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
+
+/* Sudoku */
+.sdk { display: grid; grid-template-columns: repeat(9, 1fr); width: min(100%, 440px); margin: 0 auto; border: 2px solid var(--muted); border-radius: 6px; overflow: hidden; background: var(--panel-2); gap: 1px; }
+.sc { aspect-ratio: 1; border: 0; background: var(--panel); color: var(--accent); font: 700 clamp(15px, 4.6vw, 24px) system-ui, sans-serif; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; }
+.sc.fixo { color: var(--text, #fff); background: #1d1838; }
+.sc.rb { margin-right: 1px; box-shadow: 1px 0 0 var(--muted); }
+.sc.bb { margin-bottom: 1px; box-shadow: 0 1px 0 var(--muted); }
+.sc.rb.bb { box-shadow: 1px 0 0 var(--muted), 0 1px 0 var(--muted); }
+.sc.same { background: #2c2552; }
+.sc.sel { background: #4b3d8f; outline: 2px solid var(--accent); outline-offset: -2px; }
+.sc.bad { color: #ff5d6c; background: #3a1d2c; }
+.sc .nt { display: grid; grid-template-columns: repeat(3, 1fr); font: 600 clamp(7px, 2vw, 10px)/1.1 system-ui, sans-serif; color: var(--muted); width: 100%; padding: 2px; text-align: center; }
+.numpad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: min(100%, 440px); margin: 12px auto 0; }
+.np { padding: 12px 0; border: 0; border-radius: 10px; background: var(--panel-2); color: var(--text, #fff); font: 700 20px system-ui, sans-serif; cursor: pointer; }
+.np:active { background: var(--accent); color: #1b1530; }
+
+/* Caça-palavras */
+.ws { --n: 8; display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 2px; width: min(100%, 520px); margin: 0 auto; }
+.wc { aspect-ratio: 1; border: 0; border-radius: 6px; background: var(--panel-2); color: var(--text, #fff); font: 700 clamp(11px, 3.4vw, 20px) system-ui, sans-serif; padding: 0; cursor: pointer; }
+.wc.ini { outline: 3px solid var(--accent); outline-offset: -3px; }
+.wordlist { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 14px; }
+.ww { padding: 4px 9px; border-radius: 999px; background: var(--panel-2); color: var(--muted); font: 600 13px system-ui, sans-serif; letter-spacing: .04em; }
+.ww.ok { text-decoration: line-through; opacity: .5; }
+
+/* 2048 */
+.g2048 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: min(100%, 380px); margin: 0 auto; padding: 8px; background: var(--panel-2); border-radius: 12px; touch-action: none; }
+.tl { aspect-ratio: 1; border-radius: 8px; background: rgba(255,255,255,.06); display: flex; align-items: center; justify-content: center; font: 800 clamp(18px, 6vw, 32px) system-ui, sans-serif; color: #1b1530; }
+.tl[data-v="2"] { background: #f4e9ff; } .tl[data-v="4"] { background: #e3cbff; }
+.tl[data-v="8"] { background: #ffb98a; } .tl[data-v="16"] { background: #ff9a6b; }
+.tl[data-v="32"] { background: #ff7a7a; } .tl[data-v="64"] { background: #ff5d8f; color: #fff; }
+.tl[data-v="128"] { background: #ffd56f; } .tl[data-v="256"] { background: #ffc83d; }
+.tl[data-v="512"] { background: #8dff9b; } .tl[data-v="1024"] { background: #6fd6ff; font-size: clamp(15px, 5vw, 26px); }
+.tl[data-v="2048"] { background: #c79bff; font-size: clamp(15px, 5vw, 26px); }
+
+/* Campo Minado */
+.mines { --cols: 8; display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 2px; width: min(100%, 480px); margin: 0 auto; touch-action: manipulation; }
+.mc { aspect-ratio: 1; border: 0; border-radius: 5px; background: #3b3170; color: var(--text, #fff); font: 800 clamp(10px, 3.2vw, 18px) system-ui, sans-serif; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.mc.open { background: var(--panel-2); cursor: default; }
+.mc.boom { background: #a02040; }
+.mc[data-n="1"] { color: #6fd6ff; } .mc[data-n="2"] { color: #8dff9b; } .mc[data-n="3"] { color: #ff7a7a; }
+.mc[data-n="4"] { color: #c79bff; } .mc[data-n="5"] { color: #ffb98a; } .mc[data-n="6"] { color: #6fffe0; }
+.mc[data-n="7"] { color: #fff; } .mc[data-n="8"] { color: #aaa; }

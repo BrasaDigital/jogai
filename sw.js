@@ -1,11 +1,11 @@
 // Service worker do Jogaí.
 // Estratégia: rede primeiro (sempre pega a versão nova do site); se estiver offline, usa o cache.
 // Supabase e outros domínios nunca passam pelo cache.
-const CACHE = "jogai-v1";
+const CACHE = "jogai-v2";
 const SHELL = [
   "/", "/css/style.css", "/css/auth.css", "/css/levels.css", "/css/games.css", "/css/encaixe.css",
   "/js/supabase.js", "/js/account.js", "/js/sound.js", "/js/levels.js", "/js/progress.js", "/js/kit.js", "/js/more-levels.js", "/js/pwa.js",
-  "/reflexo/", "/encaixe/", "/cobrinha/", "/memoria/", "/alvo/", "/simon/",
+  "/reflexo/", "/encaixe/", "/cobrinha/", "/memoria/", "/alvo/", "/simon/", "/sudoku/", "/cacapalavras/", "/2048/", "/minas/",
   "/icons/icon-192.png", "/manifest.webmanifest",
 ];
 

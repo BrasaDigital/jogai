@@ -24,6 +24,7 @@ reflexo/            jogo Teste de Reflexo
 | Processo de Comex, Caça aos Erros | 10 níveis; ordenar etapas / achar divergências em fatura e packing list |
 | Mister | Gerenciamento de futebol: Brasileirão Série A (20 clubes, dados de demonstração em `mister/data/serieA.js`), lesões e cartões, caixa, transferências, contratos, subida e descida; carreira salva no aparelho ou na conta (`career_saves`) |
 | Cobrinha, Memória, Acerte o Alvo, Simon | 10 níveis cada; menor tempo (s) por nível; estrutura comum em `js/kit.js` |
+| Sudoku, Caça-palavras, 2048, Campo Minado | 10 níveis cada, menor tempo; lógica pura em `*/logic.js` (Sudoku com solução única garantida) |
 
 Os níveis são liberados em ordem: só se avança depois de concluir o anterior.
 O progresso fica no aparelho (sem login) ou na conta (tabela `progress`).

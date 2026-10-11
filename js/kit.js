@@ -92,7 +92,7 @@ export function createKit({ game, total, goalText, onSelect, onBegin, onStop }) 
     stopTimer();
     if (onStop) onStop();
     const sec = elapsed();
-    finalScore = Math.max(3, Math.round(sec));
+    finalScore = Math.min(7200, Math.max(3, Math.round(sec)));
     timerEl.textContent = formatTime(sec);
     sfx.win();
     completeLevel(game, level);
