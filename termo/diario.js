@@ -8,7 +8,7 @@ import { TRIES, spHoje, diasEntre, estatisticas } from "/termo/stats.js";
 
 const $ = (id) => document.getElementById(id);
 const LINHAS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
-const INICIO = "2026-10-12"; // dia da palavra nº 1
+const INICIO = "2026-10-11"; // dia da palavra nº 1 (11/10 foi o teste do Termo)
 const EMOJI = ["⬛", "🟨", "🟩"];
 
 const bonito = (s) => s.slice(8) + "/" + s.slice(5, 7);
