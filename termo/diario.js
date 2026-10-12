@@ -8,7 +8,6 @@ import { TRIES, spHoje, diasEntre, estatisticas } from "/termo/stats.js";
 
 const $ = (id) => document.getElementById(id);
 const LINHAS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
-const INICIO = "2026-10-11"; // dia da palavra nº 1 (11/10 foi o teste do Termo)
 const EMOJI = ["⬛", "🟨", "🟩"];
 
 const bonito = (s) => s.slice(8) + "/" + s.slice(5, 7);
@@ -19,7 +18,8 @@ export function textoCompartilhar(nome, n, ganhou, tries, linhas) {
   return `Jogaí ${nome} #${n} ${ganhou ? tries : "X"}/${TRIES}\n\n` + linhas.map((r) => r.map((v) => EMOJI[v]).join("")).join("\n") + "\n\nhttps://jogai-iota.vercel.app";
 }
 
-export function criarDiario({ game, nome, comex }) {
+export function criarDiario({ game, nome, comex, inicio = "2026-10-12" }) {
+  const INICIO = inicio;
   const hoje = spHoje();
   const n = diasEntre(INICIO, hoje) + 1;
   const KS = `jogai_dia_${game}`, KH = `jogai_dia_hist_${game}`, KW = `jogai_dia_word_${game}`;
