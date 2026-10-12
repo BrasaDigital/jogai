@@ -137,6 +137,45 @@ export function criarDiario({ game, nome, comex }) {
       else { await navigator.clipboard.writeText(t); $("share-msg").textContent = "Resultado copiado! Cole onde quiser."; }
     } catch (_) { try { await navigator.clipboard.writeText(t); $("share-msg").textContent = "Resultado copiado! Cole onde quiser."; } catch (__) { $("share-msg").textContent = "Não consegui copiar."; } }
   });
+
+  // ---------- imagem para Instagram (stories) ----------
+  const COR = ["#3a3560", "#d9a82b", "#3fae5a"];
+  function rect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  async function gerarImagem() {
+    try { await document.fonts.load('40px "Press Start 2P"'); } catch (_) {}
+    const W = 1080, H = 1920, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const c = cv.getContext("2d");
+    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#0d0b1e"); g.addColorStop(1, "#2a2150");
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    const pix = '"Press Start 2P", "Courier New", monospace';
+    c.textAlign = "center"; c.textBaseline = "middle";
+    c.fillStyle = "#ffd54f"; c.font = `bold 84px ${pix}`; c.fillText("Jogaí", W / 2, 230);
+    c.fillStyle = "#ffffff"; c.font = `bold 46px ${pix}`; c.fillText(`${nome} do Dia #${Math.max(n, 1)}`, W / 2, 380);
+    c.fillStyle = st.won ? "#3fae5a" : "#ff5d6c"; c.font = `bold 150px ${pix}`; c.fillText(`${st.won ? st.guesses.length : "X"}/${TRIES}`, W / 2, 560);
+    const res = linhasEmoji(), cs = Math.min(110, Math.floor(880 / len)), gap = 14;
+    const gw = len * cs + (len - 1) * gap, x0 = (W - gw) / 2;
+    res.forEach((row, r) => row.forEach((v, k) => { c.fillStyle = COR[v]; rect(c, x0 + k * (cs + gap), 700 + r * (cs + gap), cs, cs, 18); c.fill(); }));
+    const fimY = 700 + res.length * (cs + gap);
+    const s = estatisticas(hist, hoje);
+    if (s.seq > 1) { c.fillStyle = "#ffb98a"; c.font = `bold 40px ${pix}`; c.fillText(`🔥 ${s.seq} dias seguidos`, W / 2, fimY + 80); }
+    c.fillStyle = "#b9b3e6"; c.font = `34px ${pix}`; c.fillText("Consegue mais rápido?", W / 2, 1560);
+    c.fillStyle = "#ffd54f"; c.font = `bold 36px ${pix}`; c.fillText("jogai-iota.vercel.app", W / 2, 1680);
+    return await new Promise((ok) => cv.toBlob(ok, "image/png"));
+  }
+  $("insta-btn").addEventListener("click", async () => {
+    const out = $("share-msg"); out.textContent = "Gerando imagem...";
+    try {
+      const blob = await gerarImagem();
+      const file = new File([blob], `jogai-${game}-${hoje}.png`, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], text: `Jogaí ${nome} #${Math.max(n, 1)}` }); out.textContent = "Escolha o Instagram na lista para postar."; }
+        catch (e) { out.textContent = e && e.name === "AbortError" ? "" : "Não consegui abrir o compartilhamento."; }
+      } else {
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+        out.textContent = "Imagem salva! Abra o Instagram, crie um Story e escolha essa imagem.";
+      }
+    } catch (_) { out.textContent = "Não foi possível gerar a imagem."; }
+  });
   let cd = 0;
   function contagem() {
     clearInterval(cd);
