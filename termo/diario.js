@@ -226,7 +226,6 @@ export function criarDiario({ game, nome, comex }) {
     palavra = w.word; dica = w.hint; len = palavra.length;
     await carregarDicionario(len);
     cur = Array(len).fill(""); montar();
-    if (comex && dica && !st.done) aviso("Dica: " + dica, 0);
     if (st.t0 && !st.done) iniciaRelogio();
     desenhar();
     if (st.done) { $("timer").textContent = formatTime(st.secs); resultado(); }
