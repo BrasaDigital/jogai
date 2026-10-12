@@ -5,12 +5,13 @@ import { avaliar } from "/termo/engine.js";
 const $ = (id) => document.getElementById(id);
 const LINHAS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
 const dicts = {};
+const pools = {};
+async function lerLinhas(url) {
+  try { return (await (await fetch(url)).text()).split("\n").filter(Boolean); } catch (_) { return null; }
+}
 async function carregar(len) {
-  if (dicts[len]) return dicts[len];
-  try {
-    const t = await (await fetch(`/termo/dict/${len}.txt`)).text();
-    dicts[len] = new Set(t.split("\n"));
-  } catch (_) { dicts[len] = null; }
+  if (!dicts[len]) { const l = await lerLinhas(`/termo/dict/${len}.txt`); dicts[len] = l && new Set(l); }
+  if (!pools[len]) pools[len] = (await lerLinhas(`/termo/respostas/${len}.txt`)) || [];
   return dicts[len];
 }
 
@@ -114,7 +115,7 @@ export function criarJogoPalavras(cfg) {
 
   function rodada(n) {
     c = cfg.nivel(n);
-    const sorteadas = cfg.escolher(c.len, c.boards, n);
+    const sorteadas = cfg.escolher(c.len, c.boards, n, pools[c.len] || []);
     boards = sorteadas.map((s) => ({ palavra: s.palavra, dica: s.dica || "", rows: [], done: false }));
     gastas = 0; teclas = {};
     conhecidas = Array(c.len).fill("");

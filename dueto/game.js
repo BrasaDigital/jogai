@@ -8,6 +8,6 @@ const nome = (q) => (q === 1 ? "1 palavra" : q === 2 ? "Dueto (2 palavras)" : q 
 criarJogoPalavras({
   game: "dueto",
   nivel: (n) => ({ len: 5, tries: NIVEIS[n - 1][1], boards: NIVEIS[n - 1][0] }),
-  escolher: (len, qtd) => sortear(RESPOSTAS[len], qtd).map((palavra) => ({ palavra })),
+  escolher: (len, qtd, n, extra) => sortear([...new Set([...RESPOSTAS[len], ...extra])], qtd).map((palavra) => ({ palavra })),
   goalText: (n) => `${nome(NIVEIS[n - 1][0])} em ${NIVEIS[n - 1][1]} tentativas`,
 });
