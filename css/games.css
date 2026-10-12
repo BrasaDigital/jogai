@@ -154,3 +154,16 @@
 .tk.s0 { background: #2a2650; color: #7b76a8; } .tk.s1 { background: #d9a82b; color: #1b1530; } .tk.s2 { background: #3fae5a; color: #fff; }
 .shake { animation: shk .35s; }
 @keyframes shk { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+/* Jogos do dia */
+.tb.dia { --cs: min(52px, calc((100vw - 100px) / var(--len))); }
+.dia-result { text-align: center; }
+.dia-result .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; }
+.dia-result .stats b { display: block; font-size: 22px; color: var(--accent); }
+.dia-result .stats span { font-size: 12px; color: var(--muted); }
+.dist { display: grid; gap: 4px; margin: 0 auto 16px; max-width: 340px; text-align: left; }
+.drow { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.dbar { background: var(--panel-2); color: var(--text, #fff); padding: 2px 8px; border-radius: 4px; font-size: 12px; text-align: right; }
+.dbar.me { background: #3fae5a; }
+.dia-result .btn { margin: 4px 0; }
+.dia-result p { margin: 10px 0; }

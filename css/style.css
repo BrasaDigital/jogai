@@ -202,3 +202,18 @@ button, .btn, .lv, .card { touch-action: manipulation; }
 .btn, .lv { min-height: 44px; }
 
 .section-title { font-size: 14px; color: var(--accent); margin: 36px 0 16px; }
+
+/* Destaque: jogos do dia */
+.destaque .section-title { margin-top: 8px; }
+.dia-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.dia-card { position: relative; display: block; padding: 24px 22px; border-radius: var(--radius); border: 2px solid var(--accent); background: linear-gradient(135deg, var(--panel) 0%, #2a2150 100%); text-decoration: none; color: inherit; transition: transform .15s, box-shadow .15s; }
+.dia-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(255, 213, 79, .18); }
+.dia-card.comex { border-color: #6fd6ff; }
+.dia-card .emoji { font-size: 44px; margin-bottom: 10px; }
+.dia-card h2 { font-size: 15px; color: var(--accent); margin-bottom: 8px; }
+.dia-card p { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+.dia-badge { position: absolute; top: 12px; right: 12px; font-size: 8px; background: var(--accent); color: #1b1530; padding: 5px 7px; border-radius: 6px; }
+.dia-seq { display: block; min-height: 18px; color: #ffb98a; font-size: 13px; margin-bottom: 8px; }
+.dia-tag { display: inline-block; font-size: 11px; color: #1b1530; background: var(--accent); padding: 9px 12px; border-radius: 10px; }
+.dia-card.feito { opacity: .85; }
+.dia-card.feito .dia-tag { background: #3fae5a; color: #fff; }

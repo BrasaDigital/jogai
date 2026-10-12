@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0b1e">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Jogaí">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Termo do Dia — Jogaí</title>
+  <meta name="description" content="Termo do Dia: uma palavra nova por dia, igual para todos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/levels.css">
+  <link rel="stylesheet" href="/css/games.css">
+</head>
+<body>
+  <header class="site">
+    <div class="container">
+      <a href="/" class="logo pixel">Joga<span>í</span></a>
+      <div class="header-right">
+        <a href="/" class="back">← Todos os jogos</a>
+        <div id="account"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container game-layout">
+    <section>
+      <h1 class="game-title pixel">🟩 Termo do Dia</h1>
+      <p class="game-sub">Uma palavra por dia, igual para todo mundo. Você tem 6 tentativas. Verde: letra certa no lugar. Amarelo: a letra existe, mas em outro lugar. Cinza: não tem. Volte amanhã para a próxima!</p>
+
+      <div class="toolbar">
+        <button class="btn ghost mute-btn" id="mute-btn" type="button" aria-pressed="false">🔊 Som ligado</button>
+        <span class="spacer"></span>
+        <span class="level-label" id="dia-label">&nbsp;</span>
+        <span class="timer pixel" id="timer">00:00</span>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="hud"><span id="hud-l">&nbsp;</span></div>
+        <div class="hudmsg"><b id="hud-s">&nbsp;</b></div>
+        <div class="tboards" id="tboards"></div>
+        <div class="tkeys" id="tkeys"></div>
+      </div>
+
+      <div class="submit-box dia-result" id="dia-result" hidden>
+        <h3 class="pixel" id="res-title"></h3>
+        <p class="submit-info" id="res-sub"></p>
+        <p class="submit-info" id="res-dica"></p>
+        <div class="stats">
+          <div><b id="stat-jogos">0</b><span>Jogos</span></div>
+          <div><b id="stat-vit">0%</b><span>Vitórias</span></div>
+          <div><b id="stat-seq">0</b><span>Sequência</span></div>
+          <div><b id="stat-melhor">0</b><span>Melhor</span></div>
+        </div>
+        <div class="dist" id="dist"></div>
+        <button class="btn" id="share-btn" type="button">📋 Compartilhar resultado</button>
+        <div class="msg ok" id="share-msg"></div>
+        <p class="submit-info" id="save-info"></p>
+        <button class="btn ghost" id="save-btn" type="button" hidden>Entrar para salvar</button>
+        <p class="submit-info">Próxima palavra em <b id="next-in" class="pixel">--:--:--</b></p>
+      </div>
+    </section>
+
+    <aside class="ranking">
+      <h2 class="pixel">🏆 Top 10 de hoje</h2>
+      <ol id="ranking-list"><li class="empty">Carregando...</li></ol>
+    </aside>
+  </main>
+
+  <footer class="site">
+    <div class="container">Jogaí © 2026 · feito pela Brasa Digital</div>
+  </footer>
+
+  <script type="module" src="/termodia/game.js"></script>
+</body>
+</html>

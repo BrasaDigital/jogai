@@ -26,6 +26,7 @@ reflexo/            jogo Teste de Reflexo
 | Cobrinha, Memória, Acerte o Alvo, Simon | 10 níveis cada; menor tempo (s) por nível; estrutura comum em `js/kit.js` |
 | Sudoku, Caça-palavras, 2048, Campo Minado | 10 níveis cada, menor tempo; lógica pura em `*/logic.js` (Sudoku com solução única garantida) |
 | Termo, Dueto e Quarteto, Termo Comex, Lingo | 10 níveis cada; motor em `termo/` (dicionário PT em `termo/dict/*.txt`, respostas em `termo/words.js`) |
+| Termo do Dia, Comex do Dia | 1 palavra por dia (tabela `daily_words`, liberada por RLS só até hoje, fuso de Brasília); resultado em `daily_results`; tela em `termo/diario.js` |
 
 Os níveis são liberados em ordem: só se avança depois de concluir o anterior.
 O progresso fica no aparelho (sem login) ou na conta (tabela `progress`).
