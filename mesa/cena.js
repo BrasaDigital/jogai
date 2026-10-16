@@ -2,10 +2,11 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-export const CAMPO = { c: 12, l: 7.8 }; // comprimento (x) e largura (z) do campo
-const PPU = 200;                        // pixels por unidade na textura do feltro
-const MAT = { c: 13, l: 8.8 };          // tamanho do tapete de feltro
-const S = CAMPO.c / 105;                // escala do campo real (105 m) para a mesa
+export const CAMPO = { c: 13.5, l: 8.6 }; // comprimento (x) e largura (z) do campo
+const PPU = 170;                        // pixels por unidade na textura do feltro
+const MAT = { c: 14.8, l: 9.8 };          // tamanho do tapete de feltro
+// medidas das marcações (em unidades da mesa), pensadas para o tamanho dos jogadores e dos gols
+const M = { circulo: 1.3, areaP: 2.2, areaPm: 3.1, areaG: 1.0, areaGm: 1.95, penal: 1.6 };
 
 const tex = (canvas, repeat) => {
   const t = new THREE.CanvasTexture(canvas);
@@ -20,7 +21,7 @@ function texturaFeltro() {
   const W = MAT.c * PPU, H = MAT.l * PPU, c = canvas(W, H), g = c.getContext("2d");
   const px = (x) => (x + MAT.c / 2) * PPU, py = (z) => (z + MAT.l / 2) * PPU;
   g.fillStyle = "#2b8f46"; g.fillRect(0, 0, W, H);
-  for (let i = 0; i < 12; i += 2) { g.fillStyle = "rgba(255,255,255,0.05)"; g.fillRect(px(-CAMPO.c / 2 + i), py(-CAMPO.l / 2), PPU, CAMPO.l * PPU); }
+  for (let i = 0; i < CAMPO.c; i += 2) { g.fillStyle = "rgba(255,255,255,0.05)"; g.fillRect(px(-CAMPO.c / 2 + i), py(-CAMPO.l / 2), Math.min(1, CAMPO.c - i) * PPU, CAMPO.l * PPU); }
   for (let i = 0; i < 60000; i++) { g.fillStyle = Math.random() < 0.5 ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.05)"; g.fillRect(Math.random() * W, Math.random() * H, 2, 2); }
   g.strokeStyle = "rgba(255,255,255,0.92)"; g.fillStyle = "rgba(255,255,255,0.92)"; g.lineWidth = 0.035 * PPU; g.lineCap = "round";
   const line = (x1, z1, x2, z2) => { g.beginPath(); g.moveTo(px(x1), py(z1)); g.lineTo(px(x2), py(z2)); g.stroke(); };
@@ -28,10 +29,10 @@ function texturaFeltro() {
   const hx = CAMPO.c / 2, hz = CAMPO.l / 2;
   g.strokeRect(px(-hx), py(-hz), CAMPO.c * PPU, CAMPO.l * PPU);
   line(0, -hz, 0, hz);
-  arc(0, 0, 9.15 * S, 0, Math.PI * 2);
+  arc(0, 0, M.circulo, 0, Math.PI * 2);
   g.beginPath(); g.arc(px(0), py(0), 0.04 * PPU, 0, Math.PI * 2); g.fill();
   for (const s of [-1, 1]) {
-    const pa = 16.5 * S, paw = 20.16 * S, ga = 5.5 * S, gaw = 9.16 * S, spot = 11 * S, r = 9.15 * S;
+    const pa = M.areaP, paw = M.areaPm, ga = M.areaG, gaw = M.areaGm, spot = M.penal, r = M.circulo;
     const gx = s * hx;
     g.strokeRect(px(s < 0 ? gx : gx - pa), py(-paw), pa * PPU, paw * 2 * PPU);
     g.strokeRect(px(s < 0 ? gx : gx - ga), py(-gaw), ga * PPU, gaw * 2 * PPU);
@@ -41,7 +42,7 @@ function texturaFeltro() {
   }
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
     const a0 = sx < 0 ? (sz < 0 ? 0 : -Math.PI / 2) : (sz < 0 ? Math.PI / 2 : Math.PI);
-    arc(sx * hx, sz * hz, 0.13, a0, a0 + Math.PI / 2);
+    arc(sx * hx, sz * hz, 0.18, a0, a0 + Math.PI / 2);
   }
   return tex(c);
 }
@@ -111,14 +112,14 @@ export function criarJogador({ camisa, listras, calcao, meiao, pele = "#e3b08a",
 
 function criarGol(lado) {
   const g = new THREE.Group();
-  const w = 1.9, h = 0.58, d = 0.52, r = 0.022, branco = mat("#ffffff", 0.35);
+  const w = 3.3, h = 1.05, d = 0.85, r = 0.032, branco = mat("#ffffff", 0.35);
   const tubo = (len, rot, x, y, z, axis = "y") => { const m = sombra(new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 10), branco)); m.position.set(x, y, z); if (axis === "z") m.rotation.x = Math.PI / 2; if (axis === "x") m.rotation.z = Math.PI / 2; g.add(m); };
   for (const z of [-w / 2, w / 2]) { tubo(h, 0, 0, h / 2, z); tubo(h * 0.8, 0, d, h * 0.4, z); tubo(d, 0, d / 2, h, z, "x"); tubo(d, 0, d / 2, 0.02, z, "x"); }
   tubo(w, 0, 0, h, 0, "z"); tubo(w, 0, d, h * 0.8, 0, "z");
   const rede = (wd, ht, rep) => new THREE.MeshBasicMaterial({ map: texturaRede(rep), transparent: true, side: THREE.DoubleSide, depthWrite: false });
-  const fundo = new THREE.Mesh(new THREE.PlaneGeometry(w, h * 0.8), rede(w, h, [14, 6])); fundo.position.set(d, h * 0.4, 0); fundo.rotation.y = Math.PI / 2; g.add(fundo);
-  const topo = new THREE.Mesh(new THREE.PlaneGeometry(d, w), rede(d, w, [4, 14])); topo.position.set(d / 2, (h + h * 0.8) / 2, 0); topo.rotation.set(-Math.PI / 2, 0, 0); topo.rotation.x = -Math.PI / 2; topo.rotation.z = Math.PI / 2; g.add(topo);
-  for (const z of [-w / 2, w / 2]) { const lat = new THREE.Mesh(new THREE.PlaneGeometry(d, h * 0.9), rede(d, h, [4, 6])); lat.position.set(d / 2, h * 0.45, z); g.add(lat); }
+  const fundo = new THREE.Mesh(new THREE.PlaneGeometry(w, h * 0.8), rede(w, h, [22, 8])); fundo.position.set(d, h * 0.4, 0); fundo.rotation.y = Math.PI / 2; g.add(fundo);
+  const topo = new THREE.Mesh(new THREE.PlaneGeometry(d, w), rede(d, w, [6, 22])); topo.position.set(d / 2, (h + h * 0.8) / 2, 0); topo.rotation.set(-Math.PI / 2, 0, 0); topo.rotation.x = -Math.PI / 2; topo.rotation.z = Math.PI / 2; g.add(topo);
+  for (const z of [-w / 2, w / 2]) { const lat = new THREE.Mesh(new THREE.PlaneGeometry(d, h * 0.9), rede(d, h, [6, 8])); lat.position.set(d / 2, h * 0.45, z); g.add(lat); }
   g.position.x = lado * (CAMPO.c / 2); if (lado < 0) g.rotation.y = Math.PI; // abre para fora do campo
   g.position.y = 0.02;
   return g;
@@ -147,10 +148,10 @@ export const FORMACOES = {
 };
 
 export const CAMERAS = {
-  angulo: { pos: [0, 7.6, 12.8], alvo: [0, 0.2, 0] },
-  jogador: { pos: [-10.5, 2.6, 6.4], alvo: [0.5, 0.2, 0] },
-  topo: { pos: [0, 17, 0.01], alvo: [0, 0, 0] },
-  lateral: { pos: [0, 3.0, 13], alvo: [0, 0.4, 0] },
+  angulo: { pos: [0, 8.6, 14.4], alvo: [0, 0.2, 0] },
+  jogador: { pos: [-11.8, 3.0, 7.2], alvo: [0.5, 0.2, 0] },
+  topo: { pos: [0, 19, 0.01], alvo: [0, 0, 0] },
+  lateral: { pos: [0, 3.4, 14.6], alvo: [0, 0.4, 0] },
 };
 
 export function iniciar(container) {
@@ -163,24 +164,24 @@ export function iniciar(container) {
   const scene = new THREE.Scene(); scene.background = new THREE.Color("#0d0b1e");
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
   const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true; controls.enablePan = false; controls.minDistance = 4; controls.maxDistance = 22; controls.maxPolarAngle = 1.48;
+  controls.enableDamping = true; controls.enablePan = false; controls.minDistance = 4; controls.maxDistance = 26; controls.maxPolarAngle = 1.48;
 
   scene.add(new THREE.HemisphereLight("#ffffff", "#3b3358", 0.75));
   const sol = new THREE.DirectionalLight("#fff0dc", 2.1); sol.position.set(-6, 12, 7); sol.castShadow = true;
-  sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, { left: -13, right: 13, top: 11, bottom: -11, near: 1, far: 40 }); sol.shadow.bias = -0.0004; scene.add(sol);
+  sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, { left: -15, right: 15, top: 12, bottom: -12, near: 1, far: 40 }); sol.shadow.bias = -0.0004; scene.add(sol);
 
   // mesa, feltro e chão
-  const mesa = sombra(new THREE.Mesh(new THREE.BoxGeometry(15.4, 0.5, 10.6), mat("#ffffff", 0.6, { map: texturaMadeira() }))); mesa.position.y = -0.27; scene.add(mesa);
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const p = sombra(new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.2, 0.5), mat("#6e4524", 0.7))); p.position.set(sx * 7, -1.6, sz * 4.6); scene.add(p); }
+  const mesa = sombra(new THREE.Mesh(new THREE.BoxGeometry(16.8, 0.5, 11.6), mat("#ffffff", 0.6, { map: texturaMadeira() }))); mesa.position.y = -0.27; scene.add(mesa);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const p = sombra(new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.2, 0.5), mat("#6e4524", 0.7))); p.position.set(sx * 7.8, -1.6, sz * 5.1); scene.add(p); }
   const feltro = new THREE.Mesh(new THREE.BoxGeometry(MAT.c, 0.03, MAT.l), [mat("#256f39"), mat("#256f39"), new THREE.MeshStandardMaterial({ map: texturaFeltro(), roughness: 1 }), mat("#256f39"), mat("#256f39"), mat("#256f39")]);
   feltro.position.y = 0.015; feltro.receiveShadow = true; scene.add(feltro);
   const chao = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), mat("#1a1633", 1)); chao.rotation.x = -Math.PI / 2; chao.position.y = -2.7; chao.receiveShadow = true; scene.add(chao);
 
   scene.add(criarGol(-1), criarGol(1));
-  const bandeiraA = criarBandeira("br", -7.2), bandeiraB = criarBandeira("ar", 7.2);
-  bandeiraA.position.z = -4.9; bandeiraB.position.z = -4.9; scene.add(bandeiraA, bandeiraB);
+  const bandeiraA = criarBandeira("br", -8.0), bandeiraB = criarBandeira("ar", 8.0);
+  bandeiraA.position.z = -5.4; bandeiraB.position.z = -5.4; scene.add(bandeiraA, bandeiraB);
 
-  const bola = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.11, 24, 18), mat("#ffffff", 0.45, { map: texturaBola() }))); bola.position.set(0, 0.145, 0); scene.add(bola);
+  const bola = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.16, 24, 18), mat("#ffffff", 0.45, { map: texturaBola() }))); bola.position.set(0, 0.19, 0); scene.add(bola);
 
   // times
   const kits = {
@@ -191,7 +192,7 @@ export function iniciar(container) {
   const times = { A: [], B: [] };
   for (const t of ["A", "B"]) for (let i = 0; i < 11; i++) {
     const j = criarJogador(i === 0 ? { ...kits[t], ...gk[t] } : kits[t]);
-    j.rotation.y = t === "A" ? Math.PI / 2 : -Math.PI / 2; j.scale.setScalar(1.4);
+    j.rotation.y = t === "A" ? Math.PI / 2 : -Math.PI / 2; j.scale.setScalar(1.2);
     j.userData.alvo = new THREE.Vector3(); scene.add(j); times[t].push(j);
   }
   const estado = { A: "4-3-3", B: "4-4-2" };
