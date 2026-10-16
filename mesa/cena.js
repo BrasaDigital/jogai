@@ -103,7 +103,7 @@ export function criarJogador({ camisa, listras, calcao, meiao, pele = "#f0d6c0",
   const bota = (dono, P) => { const s = sombra(new THREE.Mesh(new THREE.CapsuleGeometry(0.042, 0.07, 4, 10), mBota)); s.rotation.x = Math.PI / 2; s.scale.set(1, 1, 0.8); s.position.set(P.x, P.y - 0.03, P.z + 0.04); dono.add(s); };
 
   // base retangular fina (como a plaquinha do Gulliver)
-  const forma = new THREE.Shape(), bw = 0.17, z0 = -0.26, z1 = 0.2, rr = 0.05;
+  const forma = new THREE.Shape(), bw = 0.17, z0 = -0.27, z1 = 0.25, rr = 0.05;
   forma.moveTo(-bw + rr, z0); forma.lineTo(bw - rr, z0); forma.quadraticCurveTo(bw, z0, bw, z0 + rr); forma.lineTo(bw, z1 - rr); forma.quadraticCurveTo(bw, z1, bw - rr, z1);
   forma.lineTo(-bw + rr, z1); forma.quadraticCurveTo(-bw, z1, -bw, z1 - rr); forma.lineTo(-bw, z0 + rr); forma.quadraticCurveTo(-bw, z0, -bw + rr, z0);
   const base = sombra(new THREE.Mesh(new THREE.ExtrudeGeometry(forma, { depth: 0.03, bevelEnabled: true, bevelSize: 0.008, bevelThickness: 0.008, bevelSegments: 2 }), mBranco));
@@ -111,7 +111,7 @@ export function criarJogador({ camisa, listras, calcao, meiao, pele = "#f0d6c0",
 
   const hip = 0.36;
   // perna de apoio (esquerda): joelho dobrado à frente
-  const apoio = goleiro ? [V(-0.075, 0.2, 0.0), V(-0.085, 0.085, 0.0)] : [V(-0.07, 0.22, 0.11), V(-0.07, 0.085, 0.05)];
+  const apoio = goleiro ? [V(-0.075, 0.2, 0.0), V(-0.085, 0.085, 0.0)] : [V(-0.07, 0.2, -0.025), V(-0.07, 0.085, -0.04)];   // apoio: quase reta, de pé
   const H = V(-0.07, hip, 0);
   const Hm = H.clone().lerp(apoio[0], 0.5);
   membro(g, Hm, apoio[0], 0.048, 0.042, mPele);
@@ -121,7 +121,7 @@ export function criarJogador({ camisa, listras, calcao, meiao, pele = "#f0d6c0",
 
   // perna de chute (direita): pivô no quadril, com a alavanca atrás (userData.perna gira no eixo X)
   const perna = new THREE.Group(); perna.position.set(0.07, hip, 0); g.add(perna);
-  const joelho = goleiro ? V(0, -0.15, 0.0) : V(0, -0.15, -0.09), tornozelo = goleiro ? V(0, -0.275, 0.0) : V(0, -0.275, -0.17);
+  const joelho = goleiro ? V(0, -0.15, 0.0) : V(0, -0.15, 0.07), tornozelo = goleiro ? V(0, -0.275, 0.0) : V(0, -0.26, 0.13);
   const jm = joelho.clone().multiplyScalar(0.5);
   membro(perna, jm, joelho, 0.048, 0.042, mPele);
   membro(perna, V(0, 0, 0), jm, 0.062, 0.058, mCalcao);
@@ -145,7 +145,7 @@ export function criarJogador({ camisa, listras, calcao, meiao, pele = "#f0d6c0",
     const O = V(s * 0.135, ombroY, 0);
     let E, M;
     if (goleiro) { E = V(s * 0.24, ombroY + 0.05, 0.03); M = V(s * 0.29, ombroY + 0.15, 0.06); }
-    else if (s > 0) { E = V(s * 0.15, ombroY - 0.1, 0.04); M = V(s * 0.12, ombroY - 0.04, 0.14); }      // direito à frente, antebraço na horizontal
+    else if (s < 0) { E = V(s * 0.15, ombroY - 0.1, 0.04); M = V(s * 0.12, ombroY - 0.04, 0.14); }      // esquerdo à frente (oposto à perna que chuta)
     else { E = V(s * 0.15, ombroY - 0.1, -0.07); M = V(s * 0.14, ombroY - 0.2, -0.1); }               // esquerdo atrás, mão junto ao quadril
     membro(tronco, O, E, 0.038, 0.032, corManga);
     membro(tronco, E, M, 0.03, 0.026, goleiro ? mat(camisa, 0.7) : mPele);
