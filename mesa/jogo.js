@@ -196,13 +196,20 @@ export function criarJogo(m, ui) {
     if (d < 0.35) { mira.ok = false; grupoMira.visible = false; return; }
     mira.ok = true; mira.dir.set(vx / d, vz / d); mira.vel = Math.min(VMAX, Math.max(VMIN, d * 2.6)); posicionar(jog, mira.dir); desenharMira();
   }
+  // Durante a vez do jogador, qualquer toque perto da bola é só para mirar: a câmera não gira
+  // (para girar, arraste longe da bola ou use os botões de câmera).
+  let bloqueou = false;
   el.addEventListener("pointerdown", (ev) => {
-    if (!ativo || modo !== "mirar" || vez !== "A") return; const p = m.noMesa(ev); if (!p) return;
-    if (Math.hypot(p.x - bola.position.x, p.z - bola.position.z) > 2.4) return;
-    mirando = true; controls.enabled = false; el.setPointerCapture(ev.pointerId); atualizarMira(ev);
+    if (!ativo || vez !== "A" || (modo !== "mirar" && modo !== "anda")) return;
+    const p = m.noMesa(ev); if (p && Math.hypot(p.x - bola.position.x, p.z - bola.position.z) > 4.5) return;
+    bloqueou = true; controls.enabled = false; el.setPointerCapture(ev.pointerId); ev.stopImmediatePropagation();
+    if (modo === "mirar") { mirando = true; atualizarMira(ev); }
   }, true);
   el.addEventListener("pointermove", (ev) => { if (mirando) atualizarMira(ev); });
-  const soltou = () => { if (!mirando) return; mirando = false; controls.enabled = true; if (mira.ok && modo === "mirar") chutar(mira.dir.clone(), mira.vel); else grupoMira.visible = false; };
+  const soltou = () => {
+    if (!bloqueou) return; bloqueou = false; controls.enabled = true;
+    if (mirando) { mirando = false; if (mira.ok && modo === "mirar") chutar(mira.dir.clone(), mira.vel); else grupoMira.visible = false; }
+  };
   el.addEventListener("pointerup", soltou); el.addEventListener("pointercancel", soltou);
 
   // ----- laço -----
