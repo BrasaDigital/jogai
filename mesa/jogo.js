@@ -10,7 +10,7 @@ export function criarJogo(m, ui) {
   const { scene, controls, renderer, times, bola } = m, el = renderer.domElement;
   const xl = CAMPO.c / 2, zl = CAMPO.l / 2;
   let ativo = false, vez = "A", toques = TOQUES, chutesSaida = 0, slideFeito = false, modo = "espera", jog = null, relogio = 0;
-  let ignorar = null, ignorarAte = 0, anim = null, mirando = false, mira = { dir: new THREE.Vector2(1, 0), vel: 0, ok: false };
+  let ultimoToque = "A", ignorar = null, ignorarAte = 0, anim = null, mirando = false, mira = { dir: new THREE.Vector2(1, 0), vel: 0, ok: false };
   const vel = new THREE.Vector2(), agenda = [];
   const depois = (s, fn) => agenda.push({ t: relogio + s, fn });
 
@@ -68,7 +68,7 @@ export function criarJogo(m, ui) {
     depois(0.8, () => { if (ativo && modo === "mirar") chutar(mira.dir.clone(), v); });
   }
   function chutar(dir, v) {
-    modo = "chute"; mirando = false; grupoMira.visible = false; posicionar(jog, dir);
+    ultimoToque = vez; modo = "chute"; mirando = false; grupoMira.visible = false; posicionar(jog, dir);
     jog.position.copy(jog.userData.alvo); jog.rotation.y = jog.userData.rotAlvo;
     anim = { j: jog, t: 0, dir, v, batido: false };
   }
@@ -96,6 +96,31 @@ export function criarJogo(m, ui) {
     }
     depois(1.8, () => proximo());
   }
+  const nomeTime = (t) => (t === "A" ? "Brasil" : "Argentina");
+  function fora(tipo, x, z) {
+    if (modo !== "rolando") return; modo = "fora"; vel.set(0, 0);
+    if (tipo === "lateral") {
+      const time = ultimoToque === "A" ? "B" : "A", px = Math.max(-xl + 1, Math.min(xl - 1, x)), pz = Math.sign(z) * (zl - 0.3);
+      ui.fase(`<span>Bola fora pela lateral — ${nomeTime(time)} repõe</span>`);
+      depois(1.6, () => { bola.position.set(px, 0.19, pz); vez = time; toques = TOQUES; chutesSaida = 0; slideFeito = false; jog = null; proximo(true); });
+    } else {
+      const time = x > 0 ? "B" : "A", lado = x > 0 ? 1 : -1;
+      ui.fase(`<span>Bola pela linha de fundo — tiro de meta ${time === "A" ? "do Brasil" : "da Argentina"}</span>`);
+      depois(1.4, () => tiroDeMeta(time, lado));
+    }
+  }
+  function tiroDeMeta(time, lado) {
+    bola.position.set(lado * (xl - 1.2), 0.19, 0); modo = "planejar"; jog = null;
+    // computador replaneja: desloca um pouco cada jogador
+    times.B.forEach((jj, i) => { if (i === 0) return; const p = jj.userData.plano; p.x = Math.max(-xl + 0.5, Math.min(xl - 0.5, p.x + (Math.random() - 0.5) * 2.4)); p.z = Math.max(-zl + 0.5, Math.min(zl - 0.5, p.z + (Math.random() - 0.5) * 2.4)); });
+    m.planejar(true);
+    let resta = 5;
+    const encerrar = () => { if (modo !== "planejar") return; modo = "espera"; m.planejar(false); vez = time; toques = TOQUES; chutesSaida = 0; slideFeito = false; proximo(true); };
+    const desenhar = () => { ui.fase(`<span>Tiro de meta: replaneje o time (arraste os círculos)</span><span class="cont">${resta}s</span><button type="button" id="pronto-meta">✅ Pronto</button>`); const b = document.getElementById("pronto-meta"); if (b) b.onclick = encerrar; };
+    desenhar();
+    const tic = () => { if (!ativo || modo !== "planejar") return; resta--; if (resta <= 0) encerrar(); else { desenhar(); depois(1, tic); } };
+    depois(1, tic);
+  }
   function gol(time) {
     if (modo === "gol") return; modo = "gol"; ui.placar.valor[time]++; ui.placar.atualizar();
     ui.fase(`<span>⚽ GOOOL ${time === "A" ? "do Brasil" : "da Argentina"}!</span>`);
@@ -112,10 +137,9 @@ export function criarJogo(m, ui) {
       const sp = vel.length(); if (sp > 0) vel.multiplyScalar(Math.max(0, sp - ATRITO * h) / sp);
       let x = bola.position.x + vel.x * h, z = bola.position.z + vel.y * h;
       const naBoca = Math.abs(z) < GOL_L / 2 - 0.1, noGol = Math.abs(x) > xl;
-      if (!noGol || !naBoca) {
-        if (Math.abs(x) > xl - RBOLA && !naBoca) { x = Math.sign(x) * (xl - RBOLA); vel.x = -Math.sign(x) * Math.abs(vel.x) * REST_PAREDE; }
-        const zm = noGol ? GOL_L / 2 - 0.1 : zl - RBOLA; if (Math.abs(z) > zm) { z = Math.sign(z) * zm; vel.y = -Math.sign(z) * Math.abs(vel.y) * REST_PAREDE; }
-      } else { const zm = GOL_L / 2 - 0.1; if (Math.abs(z) > zm) { z = Math.sign(z) * zm; vel.y = -Math.sign(z) * Math.abs(vel.y) * REST_PAREDE; } }
+      if (noGol && naBoca) { const zm = GOL_L / 2 - 0.1; if (Math.abs(z) > zm) { z = Math.sign(z) * zm; vel.y = -Math.sign(z) * Math.abs(vel.y) * REST_PAREDE; } }   // paredes da rede
+      else if (Math.abs(z) > zl) { fora("lateral", x, z); return; }
+      else if (Math.abs(x) > xl) { fora("fundo", x, z); return; }
       if (Math.abs(x) > xl + 0.12 && naBoca) { gol(x > 0 ? "A" : "B"); }
       if (Math.abs(x) > xl + 0.75) { x = Math.sign(x) * (xl + 0.75); vel.multiplyScalar(0.2); }
       for (const { j } of todos()) {
@@ -170,7 +194,9 @@ export function criarJogo(m, ui) {
       ativo = true; vez = "A"; toques = TOQUES; chutesSaida = 0; slideFeito = false; jog = null; ignorar = null; modo = "espera";
       depois(1.2, () => proximo(true));
     },
+    _chutar: (dx, dz, v) => { if (modo === "mirar") chutar(new THREE.Vector2(dx, dz).normalize(), v); },
+    _lancar: (x, z, vx, vz) => { bola.position.set(x, 0.19, z); vel.set(vx, vz); modo = "rolando"; ultimoToque = "A"; },
     info: () => ({ modo, vez, toques, chutesSaida, slideFeito, bx: bola.position.x, bz: bola.position.z }),
-    parar() { ativo = false; modo = "espera"; agenda.length = 0; anim = null; mirando = false; controls.enabled = true; grupoMira.visible = false; vel.set(0, 0); bola.position.set(0, 0.19, 0); },
+    parar() { if (modo === "planejar") m.planejar(false); ativo = false; modo = "espera"; agenda.length = 0; anim = null; mirando = false; controls.enabled = true; grupoMira.visible = false; vel.set(0, 0); bola.position.set(0, 0.19, 0); },
   };
 }

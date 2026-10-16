@@ -275,7 +275,7 @@ export function iniciar(container) {
     j.rotation.y = t === "A" ? Math.PI / 2 : -Math.PI / 2; j.scale.setScalar(1.2);
     j.userData.alvo = new THREE.Vector3(); j.userData.plano = new THREE.Vector3(); scene.add(j); times[t].push(j);
   }
-  const org = { ativo: false, arrasto: null };
+  const org = { ativo: false, arrasto: null, soPlano: false };
   const estado = { A: "4-3-3", B: "4-4-2" };
   function formar(t, nome, instantaneo = false) {
     estado[t] = nome;
@@ -319,8 +319,13 @@ export function iniciar(container) {
   }
   const el = renderer.domElement;
   el.addEventListener("pointerdown", (ev) => {
-    if (!org.ativo) return; const i = jogadorSob(ev); if (i < 0) return; const p = noMesa(ev); if (!p) return;
-    const j = times.A[i]; org.arrasto = { i, dx: j.position.x - p.x, dz: j.position.z - p.z };
+    if (!org.ativo) return; const p = noMesa(ev); if (!p) return;
+    let i = -1;
+    if (org.soPlano) { let md = 0.8; times.A.forEach((jj, n) => { const d = Math.hypot(jj.userData.plano.x - p.x, jj.userData.plano.z - p.z); if (d < md) { md = d; i = n; } }); }
+    else i = jogadorSob(ev);
+    if (i < 0) return;
+    const ref = org.soPlano ? times.A[i].userData.plano : times.A[i].position;
+    org.arrasto = { i, dx: ref.x - p.x, dz: ref.z - p.z };
     controls.enabled = false; el.setPointerCapture(ev.pointerId); el.style.cursor = "grabbing";
   }, true);
   el.addEventListener("pointermove", (ev) => {
@@ -328,13 +333,19 @@ export function iniciar(container) {
     if (!org.arrasto) { el.style.cursor = jogadorSob(ev) >= 0 ? "grab" : ""; return; }
     const p = noMesa(ev); if (!p) return; const { i, dx, dz } = org.arrasto;
     const [x, z] = limitar(i, p.x + dx, p.z + dz); const j = times.A[i];
+    if (org.soPlano) { j.userData.plano.set(x, 0.05, z); return; }      // replanejamento: só o círculo se move
     j.userData.alvo.set(x, 0.05, z); j.userData.plano.copy(j.userData.alvo); j.position.copy(j.userData.alvo);
   });
   const soltar = () => { if (!org.arrasto) return; org.arrasto = null; controls.enabled = true; el.style.cursor = ""; };
   el.addEventListener("pointerup", soltar); el.addEventListener("pointercancel", soltar);
   // ativo = fase de planejamento (só o time A visível, no campo todo); falso = apito (posição de saída padrão; o plano fica guardado)
+  // replanejamento rápido (tiro de meta): só os círculos de plano se movem, os jogadores ficam onde estão
+  function planejar(ativo) {
+    soltar(); org.ativo = ativo; org.soPlano = ativo; el.style.cursor = "";
+    aneis.forEach((a) => { a.userData.mats[0].opacity = ativo ? 0.2 : 0.05; a.userData.mats[1].opacity = ativo ? 0.95 : 0.35; });
+  }
   function organizar(ativo) {
-    soltar(); org.ativo = ativo; el.style.cursor = "";
+    soltar(); org.ativo = ativo; org.soPlano = false; el.style.cursor = "";
     if (ativo) {
       formar("B", estado.B, true); formar("A", estado.A, true);
       times.B.forEach((j) => (j.visible = false)); times.A.forEach((j) => j.userData.plano.copy(j.userData.alvo));
@@ -377,5 +388,5 @@ export function iniciar(container) {
     requestAnimationFrame(loop);
   }
   loop();
-  return { scene, camera, controls, renderer, times, bola, formar, irPara, estado, organizar, limitar, noMesa, aoQuadro: (f) => ganchos.push(f) };
+  return { scene, camera, controls, renderer, times, bola, formar, irPara, estado, organizar, planejar, limitar, noMesa, aoQuadro: (f) => ganchos.push(f) };
 }
