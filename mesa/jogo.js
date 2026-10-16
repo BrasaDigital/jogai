@@ -47,7 +47,7 @@ export function criarJogo(m, ui) {
   const restaurarRotacao = () => { for (const { j, time } of todos()) if (j !== jog) j.rotation.y = PADRAO[time]; };
 
   // ----- fluxo de turnos -----
-  const textoVez = () => vez === "A" ? `<span>Sua vez · <b>${pontos(toques)}</b> · arraste perto da bola para mirar e solte para chutar</span>` : `<span>Vez do Azul · <b>${pontos(toques)}</b></span>`;
+  const textoVez = () => vez === "A" ? `<span>Sua vez · <b>${pontos(toques)}</b> · puxe para trás, como um estilingue, e solte para chutar</span>` : `<span>Vez do Azul · <b>${pontos(toques)}</b></span>`;
   function proximo(forcado = false) {
     if (!ativo) return;
     const p = forcado ? maisProximo(vez) : maisProximo();
@@ -135,7 +135,7 @@ export function criarJogo(m, ui) {
 
   // ----- entrada do jogador (arrastar a partir da bola) -----
   function atualizarMira(ev) {
-    const p = m.noMesa(ev); if (!p) return; const vx = p.x - bola.position.x, vz = p.z - bola.position.z, d = Math.hypot(vx, vz);
+    const p = m.noMesa(ev); if (!p) return; const vx = bola.position.x - p.x, vz = bola.position.z - p.z, d = Math.hypot(vx, vz);   // estilingue: o chute vai no sentido contrário ao arraste
     if (d < 0.35) { mira.ok = false; grupoMira.visible = false; return; }
     mira.ok = true; mira.dir.set(vx / d, vz / d); mira.vel = Math.min(VMAX, Math.max(VMIN, d * 2.6)); posicionar(jog, mira.dir); desenharMira();
   }
