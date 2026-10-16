@@ -18,7 +18,7 @@ const fmt = (s) => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(Ma
 
     function parar() { clearInterval(timer); timer = null; jogo.parar(); }
     function sairOnline(texto) {
-      clearInterval(snapTimer); clearInterval(vigia); snapTimer = vigia = null;
+      fecharLobby(); clearInterval(snapTimer); clearInterval(vigia); snapTimer = vigia = null;
       if (conv) { conv.parar(); conv = null; } if (canal) { try { canal.fechar(); } catch {} canal = null; }
       if (m.meuTime() !== "A") { m.definirMeu("A"); }
       modo = "bot"; fa.disabled = fb.disabled = false; $("lobby").hidden = false; status.textContent = texto || "";
@@ -68,7 +68,7 @@ const fmt = (s) => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(Ma
     function comecarJogoOnline() { if (estadoJogo !== "organizar") return; iniciarJogo(); enviarEstado(true); }
     function ligarAnfitriao(c) {
       canal = c; modo = "anfitriao";
-      c.ao("oi", (d) => { formB = d.form || "4-4-2"; fb.value = formB; status.textContent = `Adversário: ${d.nome || "Convidado"}`; if (estadoJogo === "organizar" || estadoJogo === "fim" || !snapTimer) { if (!snapTimer) snapTimer = setInterval(() => enviarEstado(), 100); ultRecebido = performance.now(); comecarOnline(); } });
+      c.ao("oi", (d) => { if (minhaSala) { minhaSala.livre = false; anunciar(); setTimeout(fecharLobby, 800); } formB = d.form || "4-4-2"; fb.value = formB; status.textContent = `Adversário: ${d.nome || "Convidado"}`; if (estadoJogo === "organizar" || estadoJogo === "fim" || !snapTimer) { if (!snapTimer) snapTimer = setInterval(() => enviarEstado(), 100); ultRecebido = performance.now(); comecarOnline(); } });
       c.ao("plano", (d) => { if (d.plano) jogo.definirPlanoB(d.plano); if (d.pronto) { convPronto = true; if (m._checar) m._checar(); } });
       c.ao("mira", (d) => jogo.miraRemota(d.dx, d.dz, d.v));
       c.ao("chute", (d) => jogo.chuteRemoto(d.dx, d.dz, d.v));
@@ -109,18 +109,42 @@ const fmt = (s) => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(Ma
 
     async function nomeJogador() { try { const mod = await import("/js/supabase.js"); const { data } = await mod.supabase.auth.getSession(); const u = data && data.session && data.session.user; return (u && (u.user_metadata && (u.user_metadata.name || u.user_metadata.full_name) || (u.email || "").split("@")[0])) || "Convidado"; } catch { return "Convidado"; } }
 
+
+    // ---------- lobby: lista de salas abertas (anúncios por broadcast no canal LOBBY) ----------
+    const painel = $("salas"); let lob = null, minhaSala = null;
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    function desenharSalas() {
+      if (!lob) { painel.hidden = true; return; }
+      const agora = performance.now(); for (const [k, v] of lob.salas) if (agora - v.t > 9000) lob.salas.delete(k);
+      const abertas = [...lob.salas.values()].filter((s) => s.livre && s.cod !== (minhaSala && minhaSala.cod));
+      painel.hidden = false;
+      painel.innerHTML = `<h3>🏟️ Lobby — ${abertas.length ? "salas abertas" : "nenhuma sala aberta"}</h3>` + (abertas.length ? abertas.map((s) => `<div class="sala"><span class="esp">${esc(s.nome)} <b>${s.cod}</b></span><button type="button" data-cod="${s.cod}">Entrar</button></div>`).join("") : '<div class="vazio">Crie uma sala e fique aqui: quem abrir o lobby vai ver a sua sala.</div>');
+      painel.querySelectorAll("button[data-cod]").forEach((b) => { b.onclick = () => { $("m-cod").value = b.dataset.cod; $("m-entrar").click(); }; });
+    }
+    function anunciar() { if (lob && minhaSala) lob.canal.enviar("anuncio", { cod: minhaSala.cod, nome: minhaSala.nome, livre: minhaSala.livre }); }
+    async function abrirLobby() {
+      if (lob) return; status.textContent = "Abrindo o lobby…";
+      const canal2 = await abrirCanal("LOBBY"); lob = { canal: canal2, salas: new Map(), timer: null };
+      canal2.ao("anuncio", (d) => { lob.salas.set(d.cod, { ...d, t: performance.now() }); desenharSalas(); });
+      canal2.ao("quem", () => anunciar());
+      lob.timer = setInterval(() => { anunciar(); desenharSalas(); }, 3000);
+      canal2.enviar("quem", {}); desenharSalas(); status.textContent = "";
+    }
+    function fecharLobby() { if (!lob) return; clearInterval(lob.timer); try { lob.canal.fechar(); } catch {} lob = null; minhaSala = null; painel.hidden = true; }
+    $("m-lobby").onclick = async () => { try { await abrirLobby(); } catch (e) { console.error(e); status.textContent = "Não foi possível abrir o lobby."; } };
     $("m-bot").onclick = () => { if (modo !== "bot") { if (canal) canal.enviar("tchau", {}); sairOnline(""); } status.textContent = ""; organizar(); };
     $("m-criar").onclick = async () => {
       if (canal) { canal.enviar("tchau", {}); sairOnline(""); }
       const cod = novoCodigo(); status.textContent = "Criando sala…";
-      try { const c = await abrirCanal(cod); parar(); ligarAnfitriao(c); estadoJogo = "organizar"; m.formar("A", fa.value); m.formar("B", fb.value); m.organizar(false); m.irPara("angulo"); fase.innerHTML = `<span>Sala <b style="font-size:20px;letter-spacing:4px">${cod}</b> criada. Passe o código ao adversário e aguarde ele entrar…</span>`; status.textContent = `Sala ${cod} — aguardando adversário`; fb.disabled = true; }
+      try { const c = await abrirCanal(cod); parar(); ligarAnfitriao(c); estadoJogo = "organizar"; m.formar("A", fa.value); m.formar("B", fb.value); m.organizar(false); m.irPara("angulo"); fase.innerHTML = `<span>Sala <b style="font-size:20px;letter-spacing:4px">${cod}</b> criada. Passe o código ao adversário e aguarde ele entrar…</span>`; status.textContent = `Sala ${cod} — aguardando adversário`; fb.disabled = true;
+        try { await abrirLobby(); minhaSala = { cod, nome: await nomeJogador(), livre: true }; anunciar(); desenharSalas(); } catch (e2) { console.error(e2); } }
       catch (e) { console.error(e); status.textContent = "Não foi possível criar a sala (Realtime indisponível)."; }
     };
     $("m-entrar").onclick = async () => {
       const cod = $("m-cod").value.trim().toUpperCase(); if (cod.length !== 4) { status.textContent = "Digite o código de 4 letras."; return; }
       if (canal) { canal.enviar("tchau", {}); sairOnline(""); }
       status.textContent = "Entrando…";
-      try { const c = await abrirCanal(cod); parar(); const nome = await nomeJogador(); fa.disabled = true; ligarConvidado(c, nome); fase.innerHTML = "<span>Conectado! Aguardando o anfitrião iniciar…</span>"; status.textContent = `Sala ${cod}`; $("lobby").hidden = false; }
+      try { const c = await abrirCanal(cod); parar(); const nome = await nomeJogador(); fa.disabled = true; ligarConvidado(c, nome); fecharLobby(); fase.innerHTML = "<span>Conectado! Aguardando o anfitrião iniciar…</span>"; status.textContent = `Sala ${cod}`; $("lobby").hidden = false; }
       catch (e) { console.error(e); status.textContent = "Não foi possível entrar na sala."; }
     };
     window.addEventListener("pagehide", () => { if (canal) canal.enviar("tchau", {}); });

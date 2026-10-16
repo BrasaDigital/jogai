@@ -20,3 +20,11 @@
 .fase .leg i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 8px; }
 .fase button { font: inherit; font-weight: 700; border: 0; border-radius: 8px; padding: 8px 14px; background: #ffd23f; color: #1a1500; cursor: pointer; }
 @media (max-width: 560px) { .placar { gap: 8px; padding: 5px 9px; } .placar .eq { font-size: 12px; } }
+
+.salas { background: var(--panel-2); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; font-size: 14px; }
+.salas h3 { margin: 0 0 6px; font-size: 14px; }
+.salas .sala { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,.08); }
+.salas .sala b { letter-spacing: 2px; color: #ffd23f; }
+.salas .sala .esp { flex: 1; }
+.salas .sala button { font: inherit; font-weight: 700; border: 0; border-radius: 8px; padding: 6px 12px; background: #ffd23f; color: #1a1500; cursor: pointer; }
+.salas .vazio { color: var(--muted); }
