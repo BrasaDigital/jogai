@@ -88,25 +88,77 @@ function texturaCamisaListrada(a, b) {
 const mat = (cor, rough = 0.7, extra = {}) => new THREE.MeshStandardMaterial({ color: cor, roughness: rough, metalness: 0, ...extra });
 const sombra = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
 
-export function criarJogador({ camisa, listras, calcao, meiao, pele = "#e3b08a", cabelo = "#2a1b12", goleiro = false }) {
-  const g = new THREE.Group();
-  const base = sombra(new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.21, 0.05, 28), mat("#f4f4f4", 0.4)));
-  base.position.y = 0.025; g.add(base);
-  const pernaGeo = new THREE.CylinderGeometry(0.042, 0.04, 0.1, 10);
+export function criarJogador({ camisa, listras, calcao, meiao, pele = "#f0d6c0", cabelo = "#1d1410", goleiro = false, luva = "#f08a24" }) {
+  const g = new THREE.Group(), V = (x, y, z) => new THREE.Vector3(x, y, z);
+  const mPele = mat(pele, 0.6), mCalcao = mat(calcao, 0.75), mMeia = mat(meiao, 0.8), mBota = mat("#15151a", 0.4), mBranco = mat("#f4f4f4", 0.4);
+  const mCamisa = listras ? mat("#ffffff", 0.7, { map: texturaCamisaListrada(listras[0], listras[1]) }) : mat(camisa, 0.7);
+  const corManga = mat(camisa || listras[0], 0.7);
+  // membro cônico entre dois pontos, com juntas arredondadas
+  const membro = (dono, A, B, rA, rB, m, juntas = true) => {
+    const d = B.clone().sub(A), l = d.length();
+    const s = sombra(new THREE.Mesh(new THREE.CylinderGeometry(rB, rA, l, 12), m));
+    s.position.copy(A).add(B).multiplyScalar(0.5); s.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize()); dono.add(s);
+    if (juntas) for (const [P, r] of [[A, rA], [B, rB]]) { const j = sombra(new THREE.Mesh(new THREE.SphereGeometry(r, 12, 10), m)); j.position.copy(P); dono.add(j); }
+  };
+  const bota = (dono, P) => { const s = sombra(new THREE.Mesh(new THREE.CapsuleGeometry(0.042, 0.07, 4, 10), mBota)); s.rotation.x = Math.PI / 2; s.scale.set(1, 1, 0.8); s.position.set(P.x, P.y - 0.03, P.z + 0.04); dono.add(s); };
+
+  // base retangular fina (como a plaquinha do Gulliver)
+  const forma = new THREE.Shape(), bw = 0.17, z0 = -0.26, z1 = 0.2, rr = 0.05;
+  forma.moveTo(-bw + rr, z0); forma.lineTo(bw - rr, z0); forma.quadraticCurveTo(bw, z0, bw, z0 + rr); forma.lineTo(bw, z1 - rr); forma.quadraticCurveTo(bw, z1, bw - rr, z1);
+  forma.lineTo(-bw + rr, z1); forma.quadraticCurveTo(-bw, z1, -bw, z1 - rr); forma.lineTo(-bw, z0 + rr); forma.quadraticCurveTo(-bw, z0, -bw + rr, z0);
+  const base = sombra(new THREE.Mesh(new THREE.ExtrudeGeometry(forma, { depth: 0.03, bevelEnabled: true, bevelSize: 0.008, bevelThickness: 0.008, bevelSegments: 2 }), mBranco));
+  base.rotation.x = Math.PI / 2; base.position.y = 0.03; g.add(base);
+
+  const hip = 0.36;
+  // perna de apoio (esquerda): joelho dobrado à frente
+  const apoio = goleiro ? [V(-0.075, 0.2, 0.0), V(-0.085, 0.085, 0.0)] : [V(-0.07, 0.22, 0.11), V(-0.07, 0.085, 0.05)];
+  const H = V(-0.07, hip, 0);
+  const Hm = H.clone().lerp(apoio[0], 0.5);
+  membro(g, Hm, apoio[0], 0.048, 0.042, mPele);
+  membro(g, H, Hm, 0.062, 0.058, mCalcao);
+  membro(g, apoio[0], apoio[1], 0.042, 0.036, mMeia);
+  bota(g, apoio[1]);
+
+  // perna de chute (direita): pivô no quadril, com a alavanca atrás (userData.perna gira no eixo X)
+  const perna = new THREE.Group(); perna.position.set(0.07, hip, 0); g.add(perna);
+  const joelho = goleiro ? V(0, -0.15, 0.0) : V(0, -0.15, -0.09), tornozelo = goleiro ? V(0, -0.275, 0.0) : V(0, -0.275, -0.17);
+  const jm = joelho.clone().multiplyScalar(0.5);
+  membro(perna, jm, joelho, 0.048, 0.042, mPele);
+  membro(perna, V(0, 0, 0), jm, 0.062, 0.058, mCalcao);
+  membro(perna, joelho, tornozelo, 0.042, 0.036, mMeia);
+  bota(perna, tornozelo);
+  // alavanca: barra por trás da perna terminando numa aba
+  const mAlav = mat("#e8e8ee", 0.45);
+  const p0 = tornozelo.clone().lerp(joelho, 0.35).add(V(0, 0, -0.03)), p1 = V(0, tornozelo.y + 0.015, tornozelo.z - 0.14);
+  membro(perna, p0, p1, 0.016, 0.016, mAlav, false);
+  const aba = sombra(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.014, 16), mAlav)); aba.position.copy(p1); aba.rotation.z = Math.PI / 2; aba.scale.set(1, 1, 1); perna.add(aba);
+  g.userData.perna = perna;
+
+  // quadril e tronco levemente inclinado para frente
+  const pelve = sombra(new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.12, 0.1, 18), mCalcao)); pelve.position.y = hip + 0.01; pelve.scale.z = 0.75; g.add(pelve);
+  const tronco = new THREE.Group(); tronco.position.set(0, hip + 0.04, 0); tronco.rotation.x = goleiro ? 0.05 : 0.17; g.add(tronco);
+  const peito = sombra(new THREE.Mesh(new THREE.CapsuleGeometry(0.105, 0.15, 6, 16), mCamisa)); peito.position.y = 0.14; peito.scale.set(1.05, 1, 0.72); tronco.add(peito);
+
+  // braços dobrados, em posição de corrida (goleiro: abertos e para cima, com luvas)
+  const ombroY = 0.22;
   for (const s of [-1, 1]) {
-    const meia = sombra(new THREE.Mesh(pernaGeo, mat(meiao))); meia.position.set(s * 0.055, 0.1, 0); g.add(meia);
-    const coxa = sombra(new THREE.Mesh(pernaGeo, mat(pele))); coxa.position.set(s * 0.055, 0.2, 0); g.add(coxa);
+    const O = V(s * 0.135, ombroY, 0);
+    let E, M;
+    if (goleiro) { E = V(s * 0.24, ombroY + 0.05, 0.03); M = V(s * 0.29, ombroY + 0.15, 0.06); }
+    else if (s > 0) { E = V(s * 0.17, ombroY - 0.1, -0.06); M = V(s * 0.14, ombroY - 0.03, -0.15); }     // direito atrás
+    else { E = V(s * 0.17, ombroY - 0.1, 0.06); M = V(s * 0.14, ombroY - 0.03, 0.15); }                // esquerdo à frente
+    membro(tronco, O, E, 0.038, 0.032, corManga);
+    membro(tronco, E, M, 0.03, 0.026, goleiro ? mat(camisa, 0.7) : mPele);
+    const mao = sombra(new THREE.Mesh(new THREE.SphereGeometry(goleiro ? 0.045 : 0.032, 12, 10), goleiro ? mat(luva, 0.6) : mPele)); mao.position.copy(M); tronco.add(mao);
   }
-  const shorts = sombra(new THREE.Mesh(new THREE.CylinderGeometry(0.105, 0.115, 0.13, 16), mat(calcao))); shorts.position.y = 0.32; g.add(shorts);
-  const matCamisa = listras ? mat("#ffffff", 0.7, { map: texturaCamisaListrada(listras[0], listras[1]) }) : mat(camisa);
-  const torso = sombra(new THREE.Mesh(new THREE.CapsuleGeometry(0.105, 0.14, 6, 14), matCamisa)); torso.position.y = 0.5; torso.scale.z = 0.72; g.add(torso);
-  for (const s of [-1, 1]) {
-    const braco = new THREE.Group(); braco.position.set(s * 0.15, 0.58, 0);
-    const manga = sombra(new THREE.Mesh(new THREE.CapsuleGeometry(0.036, 0.1, 4, 8), mat(camisa || listras[0]))); manga.position.y = -0.07; braco.add(manga);
-    braco.rotation.z = goleiro ? s * -2.5 : s * 0.5; g.add(braco);
-  }
-  const cabeca = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.083, 18, 14), mat(pele))); cabeca.position.y = 0.73; g.add(cabeca);
-  const cab = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.088, 18, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), mat(cabelo, 0.9))); cab.position.y = 0.735; cab.rotation.x = -0.25; g.add(cab);
+  // pescoço, cabeça, cabelo e rosto
+  membro(tronco, V(0, 0.27, 0), V(0, 0.33, 0.01), 0.03, 0.03, mPele, false);
+  const cabeca = new THREE.Group(); cabeca.position.set(0, 0.4, 0.015); tronco.add(cabeca);
+  const crânio = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.075, 20, 16), mPele)); crânio.scale.set(0.94, 1.06, 1); cabeca.add(crânio);
+  const cab = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.079, 20, 12, 0, Math.PI * 2, 0, Math.PI * 0.52), mat(cabelo, 0.9))); cab.rotation.x = -0.35; cab.position.set(0, 0.008, -0.006); cabeca.add(cab);
+  const nuca = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 10, 0, Math.PI * 2, Math.PI * 0.35, Math.PI * 0.4), mat(cabelo, 0.9))); nuca.position.set(0, -0.005, -0.012); cabeca.add(nuca);
+  for (const s of [-1, 1]) { const o = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 6), mat("#1a1a1a", 0.3)); o.position.set(s * 0.028, 0.004, 0.07); cabeca.add(o); }
+  const nariz = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.012, 8, 6), mPele)); nariz.position.set(0, -0.012, 0.076); cabeca.add(nariz);
   return g;
 }
 
@@ -193,7 +245,7 @@ export function iniciar(container) {
 
   scene.add(new THREE.HemisphereLight("#ffffff", "#3b3358", 0.75));
   const sol = new THREE.DirectionalLight("#fff0dc", 2.1); sol.position.set(-6, 12, 7); sol.castShadow = true;
-  sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, { left: -15, right: 15, top: 12, bottom: -12, near: 1, far: 40 }); sol.shadow.bias = -0.0004; scene.add(sol);
+  sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, { left: -15, right: 15, top: 12, bottom: -12, near: 1, far: 40 }); sol.shadow.bias = -0.0004; sol.shadow.normalBias = 0.03; scene.add(sol);
 
   // mesa, feltro e chão
   const mesa = sombra(new THREE.Mesh(new THREE.BoxGeometry(16.8, 0.5, 11.6), mat("#ffffff", 0.6, { map: texturaMadeira() }))); mesa.position.y = -0.27; scene.add(mesa);
