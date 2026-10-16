@@ -103,7 +103,7 @@ export function criarJogador({ camisa, listras, calcao, meiao, pele = "#f0d6c0",
   const bota = (dono, P) => { const s = sombra(new THREE.Mesh(new THREE.CapsuleGeometry(0.042, 0.07, 4, 10), mBota)); s.rotation.x = Math.PI / 2; s.scale.set(1, 1, 0.8); s.position.set(P.x, P.y - 0.03, P.z + 0.04); dono.add(s); };
 
   // base retangular fina (como a plaquinha do Gulliver)
-  const forma = new THREE.Shape(), bw = 0.16, z0 = -0.18, z1 = 0.07, rr = 0.05;
+  const forma = new THREE.Shape(), bw = 0.15, z0 = -0.105, z1 = 0.105, rr = 0.05;
   forma.moveTo(-bw + rr, z0); forma.lineTo(bw - rr, z0); forma.quadraticCurveTo(bw, z0, bw, z0 + rr); forma.lineTo(bw, z1 - rr); forma.quadraticCurveTo(bw, z1, bw - rr, z1);
   forma.lineTo(-bw + rr, z1); forma.quadraticCurveTo(-bw, z1, -bw, z1 - rr); forma.lineTo(-bw, z0 + rr); forma.quadraticCurveTo(-bw, z0, -bw + rr, z0);
   const base = sombra(new THREE.Mesh(new THREE.ExtrudeGeometry(forma, { depth: 0.03, bevelEnabled: true, bevelSize: 0.008, bevelThickness: 0.008, bevelSegments: 2 }), mBranco));
@@ -121,7 +121,7 @@ export function criarJogador({ camisa, listras, calcao, meiao, pele = "#f0d6c0",
 
   // perna de chute (direita): pivô no quadril, com a alavanca atrás (userData.perna gira no eixo X)
   const perna = new THREE.Group(); perna.position.set(0.07, hip, 0); g.add(perna);
-  const joelho = goleiro ? V(0, -0.15, 0.0) : V(0, -0.15, 0.07), tornozelo = goleiro ? V(0, -0.275, 0.0) : V(0, -0.26, 0.13);
+  const joelho = goleiro ? V(0, -0.15, 0.0) : V(0, -0.14, 0.12), tornozelo = goleiro ? V(0, -0.275, 0.0) : V(0, -0.265, 0.14);
   const jm = joelho.clone().multiplyScalar(0.5);
   membro(perna, jm, joelho, 0.048, 0.042, mPele);
   membro(perna, V(0, 0, 0), jm, 0.062, 0.058, mCalcao);
