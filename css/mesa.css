@@ -1,0 +1,9 @@
+/* Futebol de Mesa 3D */
+.mesa-bar { flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.mesa-rotulo { color: var(--muted); font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.mesa-bar select { background: var(--panel-2); color: var(--text, #fff); border: 0; border-radius: 8px; padding: 8px 10px; font: inherit; }
+.mesa-stage { position: relative; width: 100%; height: clamp(340px, 66vh, 640px); border-radius: var(--radius); overflow: hidden; border: 2px solid var(--panel-2); background: #0d0b1e; touch-action: none; }
+.mesa-stage canvas { display: block; width: 100%; height: 100%; }
+.mesa-stage:fullscreen { height: 100vh; border-radius: 0; }
+.mesa-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; color: var(--muted); }
+.help { color: var(--muted); font-size: 13px; text-align: center; margin-top: 12px; }

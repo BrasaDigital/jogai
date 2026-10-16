@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+  <meta name="theme-color" content="#0d0b1e">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Jogaí">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Futebol de Mesa 3D — Jogaí</title>
+  <meta name="description" content="Protótipo do campo 3D de futebol de mesa.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/levels.css">
+  <link rel="stylesheet" href="/css/mesa.css">
+</head>
+<body>
+  <header class="site">
+    <div class="container">
+      <a href="/" class="logo pixel">Joga<span>í</span></a>
+      <div class="header-right">
+        <a href="/" class="back">← Todos os jogos</a>
+        <div id="account"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 class="game-title pixel">⚽ Futebol de Mesa 3D</h1>
+    <p class="game-sub">Protótipo do campo. Arraste para girar a mesa, use a roda do mouse ou o gesto de pinça para aproximar.</p>
+
+    <div class="toolbar mesa-bar">
+      <span class="mesa-rotulo">Câmera:</span>
+      <button class="btn ghost cam" data-cam="angulo" type="button">Ângulo</button>
+      <button class="btn ghost cam" data-cam="jogador" type="button">Jogador</button>
+      <button class="btn ghost cam" data-cam="lateral" type="button">Lateral</button>
+      <button class="btn ghost cam" data-cam="topo" type="button">Topo</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="tela-cheia" type="button">⛶ Tela cheia</button>
+    </div>
+    <div class="toolbar mesa-bar">
+      <label class="mesa-rotulo">Time amarelo <select id="form-a"><option>4-3-3</option><option>4-4-2</option><option>3-5-2</option></select></label>
+      <label class="mesa-rotulo">Time azul <select id="form-b"><option>4-3-3</option><option selected>4-4-2</option><option>3-5-2</option></select></label>
+    </div>
+
+    <div class="mesa-stage" id="mesa"><div class="mesa-msg" id="mesa-msg">Carregando o campo...</div></div>
+    <p class="help">Protótipo da base do projeto: mesa, feltro, traves, bola e 22 jogadores. O jogo em si (chutar a bola, regras e partida online) vem nas próximas etapas.</p>
+  </main>
+
+  <footer class="site">
+    <div class="container">Jogaí © 2026 · feito pela Brasa Digital</div>
+  </footer>
+
+  <script type="module" src="/mesa/game.js"></script>
+</body>
+</html>
