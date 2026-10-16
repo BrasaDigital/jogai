@@ -360,6 +360,7 @@ export function iniciar(container) {
   }
   new ResizeObserver(ajustar).observe(container); ajustar();
 
+  const ganchos = [];
   const relogio = new THREE.Clock();
   function loop() {
     const dt = Math.min(0.05, relogio.getDelta()), t = relogio.elapsedTime;
@@ -371,9 +372,10 @@ export function iniciar(container) {
     for (const t2 of ["A", "B"]) for (const j of times[t2]) j.position.lerp(j.userData.alvo, 1 - Math.pow(0.001, dt));
     aneis.forEach((a, i) => a.position.set(times.A[i].userData.plano.x, 0.034, times.A[i].userData.plano.z));
     bandeiraA.userData.onda(t); bandeiraB.userData.onda(t + 1.3);
+    ganchos.forEach((f) => f(dt, t));
     controls.update(); renderer.render(scene, camera);
     requestAnimationFrame(loop);
   }
   loop();
-  return { scene, camera, controls, renderer, times, bola, formar, irPara, estado, organizar, limitar };
+  return { scene, camera, controls, renderer, times, bola, formar, irPara, estado, organizar, limitar, noMesa, aoQuadro: (f) => ganchos.push(f) };
 }

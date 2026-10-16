@@ -4,15 +4,17 @@ const TEMPO_ORGANIZAR = 20, TEMPO_JOGO = 180;
 const fmt = (s) => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(Math.floor(s % 60)).padStart(2, "0");
 (async () => {
   try {
-    const { iniciar } = await import("/mesa/cena.js");
+    const { iniciar } = await import("/mesa/cena.js"); const { criarJogo } = await import("/mesa/jogo.js");
     const m = iniciar(box); msg.remove(); window.__mesa = m;
     const hud = document.getElementById("hud"), fase = document.getElementById("fase"), relogio = document.getElementById("relogio");
     const fa = document.getElementById("form-a"), fb = document.getElementById("form-b");
     const placar = { A: 0, B: 0 }; hud.hidden = false;
     let estadoJogo = "organizar", resta = 0, timer = null;
+    const jogo = criarJogo(m, { fase: (h) => { fase.innerHTML = h; }, placar: { valor: placar, atualizar: () => mostrarPlacar() } });
+    m.jogo = jogo;
     const mostrarPlacar = () => { document.getElementById("pa").textContent = placar.A; document.getElementById("pb").textContent = placar.B; };
 
-    function parar() { clearInterval(timer); timer = null; }
+    function parar() { clearInterval(timer); timer = null; jogo.parar(); }
     function organizar() {
       parar(); estadoJogo = "organizar"; resta = TEMPO_ORGANIZAR; placar.A = placar.B = 0; mostrarPlacar();
       fa.disabled = fb.disabled = false; m.formar("A", fa.value); m.formar("B", fb.value);
@@ -23,8 +25,7 @@ const fmt = (s) => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(Ma
     }
     function iniciarJogo() {
       parar(); m.organizar(false); estadoJogo = "jogo"; resta = TEMPO_JOGO; fa.disabled = fb.disabled = true;
-      fase.innerHTML = "<span>⚽ Apito! Saída de bola (o círculo fraco mostra o seu planejamento)</span>"; m.irPara("angulo"); relogio.textContent = fmt(resta);
-      setTimeout(() => { if (estadoJogo === "jogo") fase.innerHTML = ""; }, 4000);
+      fase.innerHTML = "<span>⚽ Apito! Saída de bola</span>"; m.irPara("angulo"); relogio.textContent = fmt(resta); jogo.iniciar();
       timer = setInterval(() => { resta--; relogio.textContent = fmt(Math.max(0, resta)); if (resta <= 0) fim(); }, 1000);
     }
     function fim() {
