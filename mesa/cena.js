@@ -127,11 +127,11 @@ export function criarJogador({ camisa, listras, calcao, meiao, pele = "#f0d6c0",
   membro(perna, V(0, 0, 0), jm, 0.062, 0.058, mCalcao);
   membro(perna, joelho, tornozelo, 0.042, 0.036, mMeia);
   bota(perna, tornozelo);
-  // alavanca: barra por trás da perna terminando numa aba
+  // alavanca no quadril: sai de trás da coxa; apertar a ponta para baixo faz o pé avançar (rotation.x negativa)
   const mAlav = mat("#e8e8ee", 0.45);
-  const p0 = tornozelo.clone().lerp(joelho, 0.35).add(V(0, 0, -0.03)), p1 = V(0, tornozelo.y + 0.015, tornozelo.z - 0.14);
+  const p0 = V(0, 0.005, -0.03), p1 = V(0, 0.02, -0.25);
   membro(perna, p0, p1, 0.016, 0.016, mAlav, false);
-  const aba = sombra(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.014, 16), mAlav)); aba.position.copy(p1); aba.rotation.z = Math.PI / 2; aba.scale.set(1, 1, 1); perna.add(aba);
+  const aba = sombra(new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.014, 16), mAlav)); aba.position.copy(p1); aba.rotation.x = Math.PI / 2 - 0.1; perna.add(aba);
   g.userData.perna = perna;
 
   // quadril e tronco levemente inclinado para frente
@@ -145,8 +145,8 @@ export function criarJogador({ camisa, listras, calcao, meiao, pele = "#f0d6c0",
     const O = V(s * 0.135, ombroY, 0);
     let E, M;
     if (goleiro) { E = V(s * 0.24, ombroY + 0.05, 0.03); M = V(s * 0.29, ombroY + 0.15, 0.06); }
-    else if (s > 0) { E = V(s * 0.17, ombroY - 0.1, -0.06); M = V(s * 0.14, ombroY - 0.03, -0.15); }     // direito atrás
-    else { E = V(s * 0.17, ombroY - 0.1, 0.06); M = V(s * 0.14, ombroY - 0.03, 0.15); }                // esquerdo à frente
+    else if (s > 0) { E = V(s * 0.15, ombroY - 0.1, 0.04); M = V(s * 0.12, ombroY - 0.04, 0.14); }      // direito à frente, antebraço na horizontal
+    else { E = V(s * 0.15, ombroY - 0.1, -0.07); M = V(s * 0.14, ombroY - 0.2, -0.1); }               // esquerdo atrás, mão junto ao quadril
     membro(tronco, O, E, 0.038, 0.032, corManga);
     membro(tronco, E, M, 0.03, 0.026, goleiro ? mat(camisa, 0.7) : mPele);
     const mao = sombra(new THREE.Mesh(new THREE.SphereGeometry(goleiro ? 0.045 : 0.032, 12, 10), goleiro ? mat(luva, 0.6) : mPele)); mao.position.copy(M); tronco.add(mao);
