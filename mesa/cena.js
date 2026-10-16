@@ -224,9 +224,8 @@ export const FORMACOES = {
   "3-5-2": [[0.03, 0], [0.15, -0.55], [0.15, 0], [0.15, 0.55], [0.3, -0.85], [0.3, -0.45], [0.3, 0], [0.3, 0.45], [0.3, 0.85], [0.44, -0.3], [0.44, 0.3]],
 };
 
-// regiões da metade do campo de cada time (fração u do comprimento, 0 = gol, 0.5 = linha do meio)
-export const BANDAS = { gk: [0.015, 0.08], def: [0.09, 0.22], mei: [0.22, 0.36], ata: [0.36, 0.47] };
-export function papelDe(formacao, i) { const [d, m] = formacao.split("-").map(Number); return i === 0 ? "gk" : i <= d ? "def" : i <= d + m ? "mei" : "ata"; }
+// raio da área de cada jogador (círculo de atuação planejado)
+export const RAIO_AREA = 1.1;
 
 export const CAMERAS = {
   angulo: { pos: [0, 8.6, 14.4], alvo: [0, 0.2, 0] },
@@ -274,8 +273,9 @@ export function iniciar(container) {
   for (const t of ["A", "B"]) for (let i = 0; i < 11; i++) {
     const j = criarJogador(i === 0 ? { ...kits[t], ...gk[t] } : kits[t]);
     j.rotation.y = t === "A" ? Math.PI / 2 : -Math.PI / 2; j.scale.setScalar(1.2);
-    j.userData.alvo = new THREE.Vector3(); scene.add(j); times[t].push(j);
+    j.userData.alvo = new THREE.Vector3(); j.userData.plano = new THREE.Vector3(); scene.add(j); times[t].push(j);
   }
+  const org = { ativo: false, arrasto: null };
   const estado = { A: "4-3-3", B: "4-4-2" };
   function formar(t, nome, instantaneo = false) {
     estado[t] = nome;
@@ -283,42 +283,38 @@ export function iniciar(container) {
     FORMACOES[nome].forEach(([u, v], i) => {
       const x = lado * (CAMPO.c / 2 - u * CAMPO.c);
       times[t][i].userData.alvo.set(x, 0.05, v * (CAMPO.l / 2 - 0.45) * (t === "A" ? 1 : -1));
+      if (t === "A" && org.ativo) times[t][i].userData.plano.copy(times[t][i].userData.alvo);
       if (instantaneo) times[t][i].position.copy(times[t][i].userData.alvo);
     });
   }
   formar("A", estado.A, true); formar("B", estado.B, true);
 
-  // ---------- organização do time (arrastar jogadores dentro da sua região) ----------
-  const org = { ativo: false, arrasto: null };
-  const corBanda = { def: "#3b82f6", mei: "#facc15", ata: "#ef4444" };
-  const faixas = {};
-  for (const k of ["def", "mei", "ata"]) {
-    const [lo, hi] = BANDAS[k];
-    const m = new THREE.Mesh(new THREE.PlaneGeometry((hi - lo) * CAMPO.c, CAMPO.l - 0.5), new THREE.MeshBasicMaterial({ color: corBanda[k], transparent: true, opacity: 0.18, depthWrite: false }));
-    m.rotation.x = -Math.PI / 2; m.position.set(-CAMPO.c / 2 + ((lo + hi) / 2) * CAMPO.c, 0.034, 0); m.visible = false; scene.add(m); faixas[k] = m;
-  }
+  // ---------- planejamento do time (posição + área de cada jogador, no campo todo) ----------
+  const aneis = times.A.map(() => {
+    const g = new THREE.Group(); g.position.y = 0.034;
+    const disco = new THREE.Mesh(new THREE.CircleGeometry(RAIO_AREA, 48), new THREE.MeshBasicMaterial({ color: "#ffd23f", transparent: true, opacity: 0.14, depthWrite: false }));
+    const borda = new THREE.Mesh(new THREE.RingGeometry(RAIO_AREA - 0.045, RAIO_AREA, 64), new THREE.MeshBasicMaterial({ color: "#ffd23f", transparent: true, opacity: 0.85, depthWrite: false }));
+    disco.rotation.x = borda.rotation.x = -Math.PI / 2; g.add(disco, borda); g.visible = false; scene.add(g); g.userData.mats = [disco.material, borda.material]; return g;
+  });
   const raio = new THREE.Raycaster(), plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.05), ptr = new THREE.Vector2(), tmp = new THREE.Vector3();
-  const noMesa = (ev) => {
+  const rayDe = (ev) => {
     const r = renderer.domElement.getBoundingClientRect();
-    ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
-    raio.setFromCamera(ptr, camera); return raio.ray.intersectPlane(plano, tmp) ? tmp.clone() : null;
+    ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1); raio.setFromCamera(ptr, camera);
   };
+  const noMesa = (ev) => { rayDe(ev); return raio.ray.intersectPlane(plano, tmp) ? tmp.clone() : null; };
   const jogadorSob = (ev) => {
-    const r = renderer.domElement.getBoundingClientRect();
-    ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
-    raio.setFromCamera(ptr, camera);
-    const hit = raio.intersectObjects(times.A, true)[0]; if (!hit) return -1;
+    rayDe(ev); const hit = raio.intersectObjects(times.A, true)[0]; if (!hit) return -1;
     let o = hit.object; while (o && !times.A.includes(o)) o = o.parent; return o ? times.A.indexOf(o) : -1;
   };
   function limitar(i, x, z) {
-    const papel = papelDe(estado.A, i), [lo, hi] = BANDAS[papel];
-    x = Math.min(-CAMPO.c / 2 + hi * CAMPO.c, Math.max(-CAMPO.c / 2 + lo * CAMPO.c, x));
-    const zm = papel === "gk" ? 1.25 : CAMPO.l / 2 - 0.45; z = Math.min(zm, Math.max(-zm, z));
-    for (let k = 0; k < 3; k++) for (let n = 0; n < 11; n++) {            // mantém distância dos colegas
-      if (n === i) continue; const o = times.A[n].position, dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz), min = 0.85;
-      if (d < min) { const f = d > 1e-4 ? min / d : 1; x = o.x + (d > 1e-4 ? dx * f : min); z = o.z + (d > 1e-4 ? dz * f : 0); }
-      x = Math.min(-CAMPO.c / 2 + hi * CAMPO.c, Math.max(-CAMPO.c / 2 + lo * CAMPO.c, x)); z = Math.min(zm, Math.max(-zm, z));
-    }
+    const gk = i === 0, xmin = gk ? -CAMPO.c / 2 + 0.015 * CAMPO.c : -CAMPO.c / 2 + 0.45, xmax = gk ? -CAMPO.c / 2 + 0.08 * CAMPO.c : CAMPO.c / 2 - 0.45;
+    const zm = gk ? 1.25 : CAMPO.l / 2 - 0.45, cl = () => { x = Math.min(xmax, Math.max(xmin, x)); z = Math.min(zm, Math.max(-zm, z)); };
+    cl();
+    for (let k = 0; k < 3; k++) { for (let n = 0; n < 11; n++) {            // mantém distância dos colegas
+      if (n === i) continue; const o = times.A[n].userData.plano, dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz), min = 0.85;
+      if (d < min) { x = o.x + (d > 1e-4 ? (dx / d) * min : min); z = o.z + (d > 1e-4 ? (dz / d) * min : 0); }
+      cl();
+    } }
     return [x, z];
   }
   const el = renderer.domElement;
@@ -326,18 +322,27 @@ export function iniciar(container) {
     if (!org.ativo) return; const i = jogadorSob(ev); if (i < 0) return; const p = noMesa(ev); if (!p) return;
     const j = times.A[i]; org.arrasto = { i, dx: j.position.x - p.x, dz: j.position.z - p.z };
     controls.enabled = false; el.setPointerCapture(ev.pointerId); el.style.cursor = "grabbing";
-    const papel = papelDe(estado.A, i); for (const k in faixas) faixas[k].material.opacity = k === papel ? 0.35 : 0.1;
   }, true);
   el.addEventListener("pointermove", (ev) => {
     if (!org.ativo) return;
     if (!org.arrasto) { el.style.cursor = jogadorSob(ev) >= 0 ? "grab" : ""; return; }
     const p = noMesa(ev); if (!p) return; const { i, dx, dz } = org.arrasto;
     const [x, z] = limitar(i, p.x + dx, p.z + dz); const j = times.A[i];
-    j.userData.alvo.set(x, 0.05, z); j.position.set(x, 0.05, z);
+    j.userData.alvo.set(x, 0.05, z); j.userData.plano.copy(j.userData.alvo); j.position.copy(j.userData.alvo);
   });
-  const soltar = () => { if (!org.arrasto) return; org.arrasto = null; controls.enabled = true; el.style.cursor = ""; for (const k in faixas) faixas[k].material.opacity = 0.18; };
+  const soltar = () => { if (!org.arrasto) return; org.arrasto = null; controls.enabled = true; el.style.cursor = ""; };
   el.addEventListener("pointerup", soltar); el.addEventListener("pointercancel", soltar);
-  function organizar(ativo) { org.ativo = ativo; soltar(); for (const k in faixas) faixas[k].visible = ativo; el.style.cursor = ""; }
+  // ativo = fase de planejamento (só o time A visível, no campo todo); falso = apito (posição de saída padrão; o plano fica guardado)
+  function organizar(ativo) {
+    soltar(); org.ativo = ativo; el.style.cursor = "";
+    if (ativo) {
+      formar("B", estado.B, true); formar("A", estado.A, true);
+      times.B.forEach((j) => (j.visible = false)); times.A.forEach((j) => j.userData.plano.copy(j.userData.alvo));
+    } else {
+      times.B.forEach((j) => { j.visible = true; }); formar("B", estado.B, true); formar("A", estado.A);   // A desliza do plano para a saída
+    }
+    aneis.forEach((a) => { a.visible = true; a.userData.mats[0].opacity = ativo ? 0.14 : 0.05; a.userData.mats[1].opacity = ativo ? 0.85 : 0.35; });
+  }
 
   // câmera
   let anim = null;
@@ -364,6 +369,7 @@ export function iniciar(container) {
       if (anim.t >= 1) anim = null;
     }
     for (const t2 of ["A", "B"]) for (const j of times[t2]) j.position.lerp(j.userData.alvo, 1 - Math.pow(0.001, dt));
+    aneis.forEach((a, i) => a.position.set(times.A[i].userData.plano.x, 0.034, times.A[i].userData.plano.z));
     bandeiraA.userData.onda(t); bandeiraB.userData.onda(t + 1.3);
     controls.update(); renderer.render(scene, camera);
     requestAnimationFrame(loop);
