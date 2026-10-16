@@ -112,14 +112,39 @@ export function criarJogador({ camisa, listras, calcao, meiao, pele = "#e3b08a",
 
 function criarGol(lado) {
   const g = new THREE.Group();
-  const w = 3.3, h = 1.05, d = 0.85, r = 0.032, branco = mat("#ffffff", 0.35);
-  const tubo = (len, rot, x, y, z, axis = "y") => { const m = sombra(new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 10), branco)); m.position.set(x, y, z); if (axis === "z") m.rotation.x = Math.PI / 2; if (axis === "x") m.rotation.z = Math.PI / 2; g.add(m); };
-  for (const z of [-w / 2, w / 2]) { tubo(h, 0, 0, h / 2, z); tubo(h * 0.8, 0, d, h * 0.4, z); tubo(d, 0, d / 2, h, z, "x"); tubo(d, 0, d / 2, 0.02, z, "x"); }
-  tubo(w, 0, 0, h, 0, "z"); tubo(w, 0, d, h * 0.8, 0, "z");
-  const rede = (wd, ht, rep) => new THREE.MeshBasicMaterial({ map: texturaRede(rep), transparent: true, side: THREE.DoubleSide, depthWrite: false });
-  const fundo = new THREE.Mesh(new THREE.PlaneGeometry(w, h * 0.8), rede(w, h, [22, 8])); fundo.position.set(d, h * 0.4, 0); fundo.rotation.y = Math.PI / 2; g.add(fundo);
-  const topo = new THREE.Mesh(new THREE.PlaneGeometry(d, w), rede(d, w, [6, 22])); topo.position.set(d / 2, (h + h * 0.8) / 2, 0); topo.rotation.set(-Math.PI / 2, 0, 0); topo.rotation.x = -Math.PI / 2; topo.rotation.z = Math.PI / 2; g.add(topo);
-  for (const z of [-w / 2, w / 2]) { const lat = new THREE.Mesh(new THREE.PlaneGeometry(d, h * 0.9), rede(d, h, [6, 8])); lat.position.set(d / 2, h * 0.45, z); g.add(lat); }
+  const w = 3.3, h = 1.05, d = 0.85, hb = 0.66, r = 0.03, hw = w / 2, branco = mat("#ffffff", 0.35);
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  // tubo entre dois pontos
+  const barra = (A, B) => {
+    const dir = B.clone().sub(A), len = dir.length();
+    const m = sombra(new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 12), branco));
+    m.position.copy(A).add(B).multiplyScalar(0.5);
+    m.quaternion.setFromUnitVectors(V(0, 1, 0), dir.normalize()); g.add(m);
+  };
+  const junta = (P) => { const m = sombra(new THREE.Mesh(new THREE.SphereGeometry(r * 1.02, 10, 8), branco)); m.position.copy(P); g.add(m); };
+  // pontos da estrutura (x = profundidade, y = altura, z = largura)
+  const fe = [V(0, 0, -hw), V(0, h, -hw)], fd = [V(0, 0, hw), V(0, h, hw)];
+  const te = [V(d, 0, -hw), V(d, hb, -hw)], td = [V(d, 0, hw), V(d, hb, hw)];
+  barra(fe[0], fe[1]); barra(fd[0], fd[1]); barra(fe[1], fd[1]);          // frente: 2 postes + travessão
+  barra(te[0], te[1]); barra(td[0], td[1]); barra(te[1], td[1]);          // fundo: 2 postes + barra superior
+  barra(fe[1], te[1]); barra(fd[1], td[1]);                               // travas superiores inclinadas
+  barra(te[0], td[0]);                                                    // barra do chão no fundo
+  barra(fe[0], te[0]); barra(fd[0], td[0]);                               // barras do chão laterais
+  [fe[1], fd[1], te[1], td[1], fe[0], fd[0], te[0], td[0]].forEach(junta);
+  // redes: quadriláteros com UV, malha de ~0,11 de lado
+  const rede = (A, B, C, D) => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute([...A, ...B, ...C, ...A, ...C, ...D].flatMap(v => Array.isArray(v) ? v : [v]), 3));
+    geo.setAttribute("uv", new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1], 2));
+    const largura = new THREE.Vector3(...B).distanceTo(new THREE.Vector3(...A)), altura = new THREE.Vector3(...D).distanceTo(new THREE.Vector3(...A));
+    const mt = new THREE.MeshBasicMaterial({ map: texturaRede([Math.round(largura / 0.11), Math.round(altura / 0.11)]), transparent: true, side: THREE.DoubleSide, depthWrite: false });
+    g.add(new THREE.Mesh(geo, mt));
+  };
+  const P = (v) => [v.x, v.y, v.z];
+  rede(P(te[0]), P(td[0]), P(td[1]), P(te[1]));                           // fundo
+  rede(P(fe[1]), P(fd[1]), P(td[1]), P(te[1]));                           // teto
+  rede(P(fe[0]), P(te[0]), P(te[1]), P(fe[1]));                           // lateral esquerda (trapézio)
+  rede(P(fd[0]), P(td[0]), P(td[1]), P(fd[1]));                           // lateral direita
   g.position.x = lado * (CAMPO.c / 2); if (lado < 0) g.rotation.y = Math.PI; // abre para fora do campo
   g.position.y = 0.02;
   return g;
