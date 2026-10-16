@@ -60,12 +60,45 @@ export function criarJogo(m, ui) {
     modo = "mirar";
     if (vez === "B") depois(0.5, decidirIA);
   }
+  // simula o chute com a mesma física (sem paredes: sair do campo é resultado ruim)
+  function simular(quem, dir, v) {
+    let x = bola.position.x, z = bola.position.z, vx = dir.x * v, vz = dir.y * v, bateu = false;
+    const outros = todos().filter((o) => o.j !== quem), h = 1 / 50;
+    for (let n = 0; n < 420; n++) {
+      const sp = Math.hypot(vx, vz); if (sp < 0.12) break; const ns = Math.max(0, sp - ATRITO * h); vx *= ns / sp; vz *= ns / sp; x += vx * h; z += vz * h;
+      const boca = Math.abs(z) < GOL_L / 2 - 0.1;
+      if (Math.abs(x) > xl + 0.12 && boca) return { gol: x > 0 ? "A" : "B", x, z, bateu };
+      if (Math.abs(x) > xl || Math.abs(z) > zl) return { fora: true, x, z, bateu };
+      for (const o of outros) {
+        const dx = x - o.j.position.x, dz = z - o.j.position.z, d = Math.hypot(dx, dz), min = RBOLA + RJOG;
+        if (d < min && d > 1e-4) { const nx = dx / d, nz = dz / d; x = o.j.position.x + nx * min; z = o.j.position.z + nz * min; const vn = vx * nx + vz * nz; if (vn < 0) { vx -= (1 + REST_JOG) * vn * nx; vz -= (1 + REST_JOG) * vn * nz; } bateu = true; }
+      }
+    }
+    return { x, z, bateu };
+  }
+  function pontuar(r, time, x0) {         // quanto melhor para o time que chuta, maior
+    const meu = time, sinal = time === "B" ? -1 : 1;       // B ataca o lado x negativo
+    if (r.gol) return r.gol === meu ? 1000 : -1000;
+    if (r.fora) return -220;
+    let melhor = null; for (const o of todos()) { const d = Math.hypot(o.j.position.x - r.x, o.j.position.z - r.z); if (!melhor || d < melhor.d) melhor = { time: o.time, d }; }
+    let s = (r.x - x0) * sinal * 9;                                   // avançar em direção ao gol adversário
+    s += melhor.time === meu ? 130 : -160;                            // manter a posse
+    if (melhor.time === meu && melhor.d <= RAIO_AREA) s += 40;        // sem gastar toque para buscar
+    if (Math.abs(r.x) > xl - 1.8 && Math.sign(r.x) !== sinal) s -= 90; // perto do próprio gol
+    if (r.bateu) s -= 12;
+    return s;
+  }
   function decidirIA() {
     if (!ativo || modo !== "mirar" || vez !== "B") return;
-    const alvoZ = (Math.random() - 0.5) * 1.6, dx = -xl - bola.position.x, dz = alvoZ - bola.position.z, d = Math.hypot(dx, dz);
-    const ang = Math.atan2(dz, dx) + (Math.random() - 0.5) * 0.26, v = Math.min(VMAX, Math.max(3, Math.sqrt(2 * ATRITO * (d + 1.2)) * (0.9 + Math.random() * 0.25)));
+    let melhor = null;
+    for (let a = 0; a < 48; a++) for (const v of [3, 5, 7, 9.5]) {
+      const ang = (a / 48) * Math.PI * 2, dir = new THREE.Vector2(Math.cos(ang), Math.sin(ang));
+      const sc = pontuar(simular(jog, dir, v), "B", bola.position.x) + Math.random() * 18;
+      if (!melhor || sc > melhor.sc) melhor = { sc, ang, v };
+    }
+    const ang = melhor.ang + (Math.random() - 0.5) * 0.08, v = Math.min(VMAX, melhor.v * (0.95 + Math.random() * 0.1));
     mira.dir.set(Math.cos(ang), Math.sin(ang)); mira.vel = v; posicionar(jog, mira.dir); desenharMira();
-    depois(0.8, () => { if (ativo && modo === "mirar") chutar(mira.dir.clone(), v); });
+    depois(0.9, () => { if (ativo && modo === "mirar") chutar(mira.dir.clone(), v); });
   }
   function chutar(dir, v) {
     ultimoToque = vez; modo = "chute"; mirando = false; grupoMira.visible = false; posicionar(jog, dir);
