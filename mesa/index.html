@@ -35,7 +35,7 @@
 
   <main class="container">
     <h1 class="game-title pixel">⚽ Futebol de Mesa 3D</h1>
-    <p class="game-sub">Protótipo do campo. Arraste para girar a mesa, use a roda do mouse ou o gesto de pinça para aproximar.</p>
+    <p class="game-sub">Monte seu time (4-3-3 = 4 na defesa, 3 no meio, 3 no ataque) e jogue contra o time azul. Arraste para girar a mesa, use a roda do mouse ou o gesto de pinça para aproximar.</p>
 
     <div class="toolbar mesa-bar">
       <span class="mesa-rotulo">Câmera:</span>
@@ -51,8 +51,14 @@
       <label class="mesa-rotulo">Time azul <select id="form-b"><option>4-3-3</option><option selected>4-4-2</option><option>3-5-2</option></select></label>
     </div>
 
-    <div class="mesa-stage" id="mesa"><div class="mesa-msg" id="mesa-msg">Carregando o campo...</div></div>
-    <p class="help">Protótipo da base do projeto: mesa, feltro, traves, bola e 22 jogadores. O jogo em si (chutar a bola, regras e partida online) vem nas próximas etapas.</p>
+    <div class="mesa-stage" id="mesa">
+      <div class="mesa-msg" id="mesa-msg">Carregando o campo...</div>
+      <div class="hud" id="hud" hidden>
+        <div class="placar"><span class="eq">🟡 Brasil</span><b id="pa">0</b><span class="relogio" id="relogio">03:00</span><b id="pb">0</b><span class="eq">Argentina 🔵</span></div>
+        <div class="fase" id="fase"></div>
+      </div>
+    </div>
+    <p class="help">Protótipo: placar, tempo e organização do time já funcionam. Chutar a bola, regras e partida online vêm nas próximas etapas.</p>
   </main>
 
   <footer class="site">

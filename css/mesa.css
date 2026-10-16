@@ -7,3 +7,16 @@
 .mesa-stage:fullscreen { height: 100vh; border-radius: 0; }
 .mesa-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; color: var(--muted); }
 .help { color: var(--muted); font-size: 13px; text-align: center; margin-top: 12px; }
+
+.hud { position: absolute; inset: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.hud[hidden] { display: none; }
+.placar { display: flex; align-items: center; gap: 12px; background: rgba(13,11,30,.85); border: 2px solid var(--panel-2); border-radius: 12px; padding: 6px 14px; font-weight: 700; }
+.placar b { font-size: 22px; min-width: 20px; text-align: center; color: var(--accent, #ffd23f); }
+.placar .eq { font-size: 14px; }
+.relogio { font-family: 'Press Start 2P', monospace; font-size: 14px; background: #000; color: #ffd23f; padding: 6px 10px; border-radius: 8px; }
+.fase { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 20px); pointer-events: auto; display: flex; align-items: center; gap: 12px; background: rgba(13,11,30,.88); border: 2px solid var(--panel-2); border-radius: 12px; padding: 8px 14px; font-size: 14px; text-align: center; flex-wrap: wrap; justify-content: center; }
+.fase:empty { display: none; }
+.fase .cont { font-family: 'Press Start 2P', monospace; font-size: 14px; color: #ffd23f; }
+.fase .leg i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 8px; }
+.fase button { font: inherit; font-weight: 700; border: 0; border-radius: 8px; padding: 8px 14px; background: #ffd23f; color: #1a1500; cursor: pointer; }
+@media (max-width: 560px) { .placar { gap: 8px; padding: 5px 9px; } .placar .eq { font-size: 12px; } }

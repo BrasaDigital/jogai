@@ -224,6 +224,10 @@ export const FORMACOES = {
   "3-5-2": [[0.03, 0], [0.15, -0.55], [0.15, 0], [0.15, 0.55], [0.3, -0.85], [0.3, -0.45], [0.3, 0], [0.3, 0.45], [0.3, 0.85], [0.44, -0.3], [0.44, 0.3]],
 };
 
+// regiões da metade do campo de cada time (fração u do comprimento, 0 = gol, 0.5 = linha do meio)
+export const BANDAS = { gk: [0.015, 0.08], def: [0.09, 0.22], mei: [0.22, 0.36], ata: [0.36, 0.47] };
+export function papelDe(formacao, i) { const [d, m] = formacao.split("-").map(Number); return i === 0 ? "gk" : i <= d ? "def" : i <= d + m ? "mei" : "ata"; }
+
 export const CAMERAS = {
   angulo: { pos: [0, 8.6, 14.4], alvo: [0, 0.2, 0] },
   jogador: { pos: [-11.8, 3.0, 7.2], alvo: [0.5, 0.2, 0] },
@@ -284,6 +288,57 @@ export function iniciar(container) {
   }
   formar("A", estado.A, true); formar("B", estado.B, true);
 
+  // ---------- organização do time (arrastar jogadores dentro da sua região) ----------
+  const org = { ativo: false, arrasto: null };
+  const corBanda = { def: "#3b82f6", mei: "#facc15", ata: "#ef4444" };
+  const faixas = {};
+  for (const k of ["def", "mei", "ata"]) {
+    const [lo, hi] = BANDAS[k];
+    const m = new THREE.Mesh(new THREE.PlaneGeometry((hi - lo) * CAMPO.c, CAMPO.l - 0.5), new THREE.MeshBasicMaterial({ color: corBanda[k], transparent: true, opacity: 0.18, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2; m.position.set(-CAMPO.c / 2 + ((lo + hi) / 2) * CAMPO.c, 0.034, 0); m.visible = false; scene.add(m); faixas[k] = m;
+  }
+  const raio = new THREE.Raycaster(), plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.05), ptr = new THREE.Vector2(), tmp = new THREE.Vector3();
+  const noMesa = (ev) => {
+    const r = renderer.domElement.getBoundingClientRect();
+    ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+    raio.setFromCamera(ptr, camera); return raio.ray.intersectPlane(plano, tmp) ? tmp.clone() : null;
+  };
+  const jogadorSob = (ev) => {
+    const r = renderer.domElement.getBoundingClientRect();
+    ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+    raio.setFromCamera(ptr, camera);
+    const hit = raio.intersectObjects(times.A, true)[0]; if (!hit) return -1;
+    let o = hit.object; while (o && !times.A.includes(o)) o = o.parent; return o ? times.A.indexOf(o) : -1;
+  };
+  function limitar(i, x, z) {
+    const papel = papelDe(estado.A, i), [lo, hi] = BANDAS[papel];
+    x = Math.min(-CAMPO.c / 2 + hi * CAMPO.c, Math.max(-CAMPO.c / 2 + lo * CAMPO.c, x));
+    const zm = papel === "gk" ? 1.25 : CAMPO.l / 2 - 0.45; z = Math.min(zm, Math.max(-zm, z));
+    for (let k = 0; k < 3; k++) for (let n = 0; n < 11; n++) {            // mantém distância dos colegas
+      if (n === i) continue; const o = times.A[n].position, dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz), min = 0.85;
+      if (d < min) { const f = d > 1e-4 ? min / d : 1; x = o.x + (d > 1e-4 ? dx * f : min); z = o.z + (d > 1e-4 ? dz * f : 0); }
+      x = Math.min(-CAMPO.c / 2 + hi * CAMPO.c, Math.max(-CAMPO.c / 2 + lo * CAMPO.c, x)); z = Math.min(zm, Math.max(-zm, z));
+    }
+    return [x, z];
+  }
+  const el = renderer.domElement;
+  el.addEventListener("pointerdown", (ev) => {
+    if (!org.ativo) return; const i = jogadorSob(ev); if (i < 0) return; const p = noMesa(ev); if (!p) return;
+    const j = times.A[i]; org.arrasto = { i, dx: j.position.x - p.x, dz: j.position.z - p.z };
+    controls.enabled = false; el.setPointerCapture(ev.pointerId); el.style.cursor = "grabbing";
+    const papel = papelDe(estado.A, i); for (const k in faixas) faixas[k].material.opacity = k === papel ? 0.35 : 0.1;
+  }, true);
+  el.addEventListener("pointermove", (ev) => {
+    if (!org.ativo) return;
+    if (!org.arrasto) { el.style.cursor = jogadorSob(ev) >= 0 ? "grab" : ""; return; }
+    const p = noMesa(ev); if (!p) return; const { i, dx, dz } = org.arrasto;
+    const [x, z] = limitar(i, p.x + dx, p.z + dz); const j = times.A[i];
+    j.userData.alvo.set(x, 0.05, z); j.position.set(x, 0.05, z);
+  });
+  const soltar = () => { if (!org.arrasto) return; org.arrasto = null; controls.enabled = true; el.style.cursor = ""; for (const k in faixas) faixas[k].material.opacity = 0.18; };
+  el.addEventListener("pointerup", soltar); el.addEventListener("pointercancel", soltar);
+  function organizar(ativo) { org.ativo = ativo; soltar(); for (const k in faixas) faixas[k].visible = ativo; el.style.cursor = ""; }
+
   // câmera
   let anim = null;
   function irPara(nome, instantaneo = false) {
@@ -314,5 +369,5 @@ export function iniciar(container) {
     requestAnimationFrame(loop);
   }
   loop();
-  return { scene, camera, controls, renderer, times, bola, formar, irPara, estado };
+  return { scene, camera, controls, renderer, times, bola, formar, irPara, estado, organizar, limitar };
 }
