@@ -275,6 +275,7 @@ export function iniciar(container) {
     j.rotation.y = t === "A" ? Math.PI / 2 : -Math.PI / 2; j.scale.setScalar(1.2);
     j.userData.alvo = new THREE.Vector3(); j.userData.plano = new THREE.Vector3(); scene.add(j); times[t].push(j);
   }
+  let meu = "A"; const outro = () => (meu === "A" ? "B" : "A");
   const org = { ativo: false, arrasto: null, soPlano: false };
   const estado = { A: "4-3-3", B: "4-4-2" };
   function formar(t, nome, instantaneo = false) {
@@ -283,7 +284,7 @@ export function iniciar(container) {
     FORMACOES[nome].forEach(([u, v], i) => {
       const x = lado * (CAMPO.c / 2 - u * CAMPO.c);
       times[t][i].userData.alvo.set(x, 0.05, v * (CAMPO.l / 2 - 0.45) * (t === "A" ? 1 : -1));
-      if (t === "A" && org.ativo) times[t][i].userData.plano.copy(times[t][i].userData.alvo);
+      if (t === meu && org.ativo) times[t][i].userData.plano.copy(times[t][i].userData.alvo);
       if (instantaneo) times[t][i].position.copy(times[t][i].userData.alvo);
     });
   }
@@ -303,15 +304,16 @@ export function iniciar(container) {
   };
   const noMesa = (ev) => { rayDe(ev); return raio.ray.intersectPlane(plano, tmp) ? tmp.clone() : null; };
   const jogadorSob = (ev) => {
-    rayDe(ev); const hit = raio.intersectObjects(times.A, true)[0]; if (!hit) return -1;
-    let o = hit.object; while (o && !times.A.includes(o)) o = o.parent; return o ? times.A.indexOf(o) : -1;
+    rayDe(ev); const hit = raio.intersectObjects(times[meu], true)[0]; if (!hit) return -1;
+    let o = hit.object; while (o && !times[meu].includes(o)) o = o.parent; return o ? times[meu].indexOf(o) : -1;
   };
   function limitar(i, x, z) {
-    const gk = i === 0, xmin = gk ? -CAMPO.c / 2 + 0.015 * CAMPO.c : -CAMPO.c / 2 + 0.45, xmax = gk ? -CAMPO.c / 2 + 0.08 * CAMPO.c : CAMPO.c / 2 - 0.45;
+    const gk = i === 0, ld = meu === "A" ? -1 : 1, g0 = ld * (CAMPO.c / 2 - 0.015 * CAMPO.c), g1 = ld * (CAMPO.c / 2 - 0.08 * CAMPO.c);
+    const xmin = gk ? Math.min(g0, g1) : -CAMPO.c / 2 + 0.45, xmax = gk ? Math.max(g0, g1) : CAMPO.c / 2 - 0.45;
     const zm = gk ? 1.25 : CAMPO.l / 2 - 0.45, cl = () => { x = Math.min(xmax, Math.max(xmin, x)); z = Math.min(zm, Math.max(-zm, z)); };
     cl();
     for (let k = 0; k < 3; k++) { for (let n = 0; n < 11; n++) {            // mantém distância dos colegas
-      if (n === i) continue; const o = times.A[n].userData.plano, dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz), min = 0.85;
+      if (n === i) continue; const o = times[meu][n].userData.plano, dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz), min = 0.85;
       if (d < min) { x = o.x + (d > 1e-4 ? (dx / d) * min : min); z = o.z + (d > 1e-4 ? (dz / d) * min : 0); }
       cl();
     } }
@@ -321,10 +323,10 @@ export function iniciar(container) {
   el.addEventListener("pointerdown", (ev) => {
     if (!org.ativo) return; const p = noMesa(ev); if (!p) return;
     let i = -1;
-    if (org.soPlano) { let md = 0.8; times.A.forEach((jj, n) => { const d = Math.hypot(jj.userData.plano.x - p.x, jj.userData.plano.z - p.z); if (d < md) { md = d; i = n; } }); }
+    if (org.soPlano) { let md = 0.8; times[meu].forEach((jj, n) => { const d = Math.hypot(jj.userData.plano.x - p.x, jj.userData.plano.z - p.z); if (d < md) { md = d; i = n; } }); }
     else i = jogadorSob(ev);
     if (i < 0) return;
-    const ref = org.soPlano ? times.A[i].userData.plano : times.A[i].position;
+    const ref = org.soPlano ? times[meu][i].userData.plano : times[meu][i].position;
     org.arrasto = { i, dx: ref.x - p.x, dz: ref.z - p.z };
     controls.enabled = false; el.setPointerCapture(ev.pointerId); el.style.cursor = "grabbing";
   }, true);
@@ -332,7 +334,7 @@ export function iniciar(container) {
     if (!org.ativo) return;
     if (!org.arrasto) { el.style.cursor = jogadorSob(ev) >= 0 ? "grab" : ""; return; }
     const p = noMesa(ev); if (!p) return; const { i, dx, dz } = org.arrasto;
-    const [x, z] = limitar(i, p.x + dx, p.z + dz); const j = times.A[i];
+    const [x, z] = limitar(i, p.x + dx, p.z + dz); const j = times[meu][i];
     if (org.soPlano) { j.userData.plano.set(x, 0.05, z); return; }      // replanejamento: só o círculo se move
     j.userData.alvo.set(x, 0.05, z); j.userData.plano.copy(j.userData.alvo); j.position.copy(j.userData.alvo);
   });
@@ -348,9 +350,9 @@ export function iniciar(container) {
     soltar(); org.ativo = ativo; org.soPlano = false; el.style.cursor = "";
     if (ativo) {
       formar("B", estado.B, true); formar("A", estado.A, true);
-      times.B.forEach((j) => (j.visible = false)); times.A.forEach((j) => j.userData.plano.copy(j.userData.alvo));
+      times[meu].forEach((j) => { j.visible = true; }); times[outro()].forEach((j) => (j.visible = false)); times[meu].forEach((j) => j.userData.plano.copy(j.userData.alvo));
     } else {
-      times.B.forEach((j) => { j.visible = true; }); formar("B", estado.B, true); formar("A", estado.A);   // A desliza do plano para a saída
+      for (const t2 of ["A", "B"]) times[t2].forEach((j) => { j.visible = true; }); formar(outro(), estado[outro()], true); formar(meu, estado[meu]);   // o meu time desliza do plano para a saída
     }
     aneis.forEach((a) => { a.visible = true; a.userData.mats[0].opacity = ativo ? 0.14 : 0.05; a.userData.mats[1].opacity = ativo ? 0.85 : 0.35; });
   }
@@ -358,11 +360,12 @@ export function iniciar(container) {
   // câmera
   let anim = null;
   function irPara(nome, instantaneo = false) {
-    const c = CAMERAS[nome]; if (!c) return;
-    const destino = { pos: new THREE.Vector3(...c.pos), alvo: new THREE.Vector3(...c.alvo) };
+    const c = CAMERAS[nome]; if (!c) return; const s = meu === "B" ? -1 : 1;     // quem joga de azul vê o campo girado (seu gol à esquerda)
+    const destino = { pos: new THREE.Vector3(c.pos[0] * s, c.pos[1], c.pos[2] * s), alvo: new THREE.Vector3(c.alvo[0] * s, c.alvo[1], c.alvo[2] * s) };
     if (instantaneo) { camera.position.copy(destino.pos); controls.target.copy(destino.alvo); controls.update(); return; }
     anim = { t: 0, de: { pos: camera.position.clone(), alvo: controls.target.clone() }, para: destino };
   }
+  function definirMeu(t) { meu = t; irPara("angulo", true); }
   irPara("angulo", true);
 
   function ajustar() {
@@ -381,12 +384,12 @@ export function iniciar(container) {
       if (anim.t >= 1) anim = null;
     }
     for (const t2 of ["A", "B"]) for (const j of times[t2]) j.position.lerp(j.userData.alvo, 1 - Math.pow(0.001, dt));
-    aneis.forEach((a, i) => a.position.set(times.A[i].userData.plano.x, 0.034, times.A[i].userData.plano.z));
+    aneis.forEach((a, i) => a.position.set(times[meu][i].userData.plano.x, 0.034, times[meu][i].userData.plano.z));
     bandeiraA.userData.onda(t); bandeiraB.userData.onda(t + 1.3);
     ganchos.forEach((f) => f(dt, t));
     controls.update(); renderer.render(scene, camera);
     requestAnimationFrame(loop);
   }
   loop();
-  return { scene, camera, controls, renderer, times, bola, formar, irPara, estado, organizar, planejar, limitar, noMesa, aoQuadro: (f) => ganchos.push(f) };
+  return { scene, camera, controls, renderer, times, bola, formar, irPara, estado, organizar, planejar, definirMeu, meuTime: () => meu, limitar, noMesa, aoQuadro: (f) => ganchos.push(f) };
 }
