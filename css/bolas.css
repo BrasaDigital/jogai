@@ -2,3 +2,5 @@
 .bolas-info b { color: #ffd23f; }
 .bolas-wrap { display: flex; justify-content: center; }
 .bolas-wrap canvas { width: min(100%, calc((100vh - 230px) * 0.5625)); min-width: 260px; aspect-ratio: 360 / 640; display: block; touch-action: none; border-radius: 12px; border: 2px solid var(--panel-2); background: #1c1033; }
+.bolas-info { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
+.bolas-info .mute-btn { padding: 4px 10px; font-size: 12px; }
