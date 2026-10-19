@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Jogaí",
+    "slug": "jogai",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0d0b1e",
+    "splash": { "image": "./assets/splash-icon.png", "resizeMode": "contain", "backgroundColor": "#0d0b1e" },
+    "plugins": ["expo-screen-orientation"],
+    "android": {
+      "package": "br.com.brasadigital.jogai",
+      "versionCode": 1,
+      "adaptiveIcon": { "backgroundColor": "#0d0b1e", "foregroundImage": "./assets/android-icon-foreground.png" }
+    }
+  }
+}
