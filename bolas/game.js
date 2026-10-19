@@ -16,13 +16,18 @@ const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 
 // ---------- configuração (ajuste aqui o balanceamento) ----------
 const CFG = {
-  hordeHP: 1800, hordeRows: 5, hordePerEnemy: 22, hordeSpeed: 2.6,
-  bossHP: 2600, bossSpeed: 9,
-  dropRate: 9,             // bolas por segundo
+  hordeHP: 1400, hordeRows: 5, hordePerEnemy: 22, hordeSpeed: 2.3,
+  bossHP: 1900, bossSpeed: 6.5,
+  dropRate: 11,            // bolas por segundo
   liveCap: 380,            // máximo de bolas simultâneas na tela
   gravity: 620, restitution: 0.45,
   soldierX: 38, laneFloor: 168, floorY: 540
 };
+
+// fadiga dos portais: quanto mais bolas passam, mais ele esquenta e perde o multiplicador (esfria com o tempo)
+const FADIGA = {max:20, esfria:4.6, perda:0.55};
+const eficiencia = (g) => 1 - FADIGA.perda*Math.min(1, (g.heat||0)/FADIGA.max);
+const multAtual = (g) => g.bad ? g.mult : Math.max(1, Math.round(1 + (g.mult-1)*eficiencia(g)));
 
 // ---------- fases ----------
 const MAXFASE = 8;
@@ -32,8 +37,8 @@ const BASE = {hordePerEnemy:CFG.hordePerEnemy, hordeHP:CFG.hordeHP, hordeSpeed:C
 const BOSS_COR = [['#d1342a','#e9564a'],['#8a3ad1','#a964ea'],['#d17a1a','#ea9a3c'],['#1a8ad1','#3cabea']];
 function aplicarFase(){
   const k = nivel-1;
-  CFG.hordeHP = Math.round(BASE.hordeHP*(1+0.1*k)); CFG.hordePerEnemy = BASE.hordePerEnemy*(1+0.1*k); CFG.bossHP = Math.round(BASE.bossHP*(1+0.12*k));
-  CFG.hordeSpeed = BASE.hordeSpeed + 0.06*k; CFG.bossSpeed = BASE.bossSpeed + 0.2*k;
+  CFG.hordeHP = Math.round(BASE.hordeHP*(1+0.05*k)); CFG.hordePerEnemy = BASE.hordePerEnemy*(1+0.05*k); CFG.bossHP = Math.round(BASE.bossHP*(1+0.06*k));
+  CFG.hordeSpeed = BASE.hordeSpeed + 0.03*k; CFG.bossSpeed = BASE.bossSpeed + 0.08*k;
   gates.length = 7; // mantém os 7 portais de multiplicação
   const ruins = Math.min(3, Math.floor(nivel/2));    // portais vermelhos (dividem a bola) a partir da fase 2
   const pos = [[332,3.1,1.0],[418,2.7,3.3],[500,3.4,2.0]];
@@ -169,10 +174,12 @@ function stepBalls(dt){
       if(Math.abs(b.y-g.y) < GATE_H/2+2 && Math.abs(b.x-gx) < g.w/2){
         b.hit |= (1<<g.id);
         if(g.bad){ b.v = Math.max(0.5, b.v*g.mult); g.flash = 0.25; S.rings.push({x:gx,y:g.y,r:4,l:0.35,bad:true}); sfx.ruim(); continue; }
-        sfx.gate(g.mult);
+        const mAtual = multAtual(g); g.heat = Math.min(FADIGA.max*1.2, (g.heat||0)+1);
+        sfx.gate(mAtual);
+        if(mAtual<=1) continue;
         const room = Math.max(0, CFG.liveCap - S.balls.length);
-        const n = Math.min(g.mult-1, 3, room);
-        const total = b.v*g.mult, each = total/(n+1);
+        const n = Math.min(mAtual-1, 3, room);
+        const total = b.v*mAtual, each = total/(n+1);
         b.v = each;
         for(let k=0;k<n;k++) spawnBall(b.x+rnd(-3,3), b.y, b.vx+rnd(-70,70), b.vy*0.8-rnd(0,50), each, b.hit);
         S.rings.push({x:gx,y:g.y,r:4,l:0.35});
@@ -189,7 +196,7 @@ function stepBalls(dt){
 
 function update(dt){
   S.t += dt;
-  for(const g of gates) if(g.flash>0) g.flash-=dt;
+  for(const g of gates){ if(g.flash>0) g.flash-=dt; if(g.heat>0) g.heat = Math.max(0, g.heat - FADIGA.esfria*dt); }
   if(S.mode!=='play'){ S.endT = (S.endT||0)+dt; stepFx(dt); return; }
   if(S.moved) S.hintT += dt;
 
@@ -299,11 +306,13 @@ function drawGates(){
   for(const g of gates){
     const x = gateX(g,S.t), f = Math.max(0,g.flash||0)*4;
     if(!g.bad && g.mult>=5){ ctx.fillStyle='rgba(75,227,90,.18)'; rr(x-g.w/2-5, g.y-12, g.w+10, 24, 8); ctx.fill(); }
-    ctx.fillStyle = f>0 ? (g.bad?'#ffb5b5':'#eaffb5') : (g.bad?'#e84a4a':'#4be35a');
+    const ef = g.bad?1:eficiencia(g), quente = 1-ef;
+    ctx.fillStyle = f>0 ? (g.bad?'#ffb5b5':'#eaffb5') : (g.bad?'#e84a4a': quente>0.25 ? `rgb(${Math.round(75+quente*170)},${Math.round(227-quente*120)},${Math.round(90-quente*30)})` : '#4be35a');
     rr(x-g.w/2, g.y-GATE_H/2-f/2, g.w, GATE_H+f, 3); ctx.fill();
     ctx.fillStyle=g.bad?'#7a1d1d':'#1d6b2a'; ctx.fillRect(x-g.w/2-3, g.y-GATE_H/2-3, 3, GATE_H+6); ctx.fillRect(x+g.w/2, g.y-GATE_H/2-3, 3, GATE_H+6);
     ctx.font = `13px ${FONT}`; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.lineWidth=3; ctx.strokeStyle=g.bad?'#4a0f0f':'#0f4a1b'; ctx.strokeText(g.label,x,g.y+1); ctx.fillStyle='#fff'; ctx.fillText(g.label,x,g.y+1);
+    ctx.lineWidth=3; ctx.strokeStyle=g.bad?'#4a0f0f':'#0f4a1b'; const rot = g.bad ? g.label : 'x'+multAtual(g); ctx.strokeText(rot,x,g.y+1); ctx.fillStyle='#fff'; ctx.fillText(rot,x,g.y+1);
+    if(!g.bad && quente>0.25){ ctx.fillStyle='rgba(255,140,60,.9)'; rr(x-g.w/2, g.y+GATE_H/2+2, g.w*clamp(quente/FADIGA.perda,0,1), 2.5, 1); ctx.fill(); }
   }
   ctx.fillStyle='#6cc72a'; ctx.fillRect(CHUTE_X-2, CHUTE_TOP, 4, CHUTE_BOT-CHUTE_TOP);
 }
@@ -453,5 +462,5 @@ function frame(now){
 }
 requestAnimationFrame(frame);
 if (document.fonts && document.fonts.load) document.fonts.load("20px 'Lilita One'");
-window.__g = {get S(){return S;}, CFG, step:(n,dt=1/60)=>{for(let i=0;i<n;i++) update(dt);}, draw, newGame};
+window.__g = {get S(){return S;}, CFG, gates, step:(n,dt=1/60)=>{for(let i=0;i<n;i++) update(dt);}, draw, newGame};
 })();
