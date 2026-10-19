@@ -1,0 +1,4 @@
+.bolas-info { text-align: center; color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+.bolas-info b { color: #ffd23f; }
+.bolas-wrap { display: flex; justify-content: center; }
+.bolas-wrap canvas { width: min(100%, calc((100vh - 230px) * 0.5625)); min-width: 260px; aspect-ratio: 360 / 640; display: block; touch-action: none; border-radius: 12px; border: 2px solid var(--panel-2); background: #1c1033; }

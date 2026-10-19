@@ -5,7 +5,7 @@ const CACHE = "jogai-v4";
 const SHELL = [
   "/", "/css/style.css", "/css/auth.css", "/css/levels.css", "/css/games.css", "/css/encaixe.css",
   "/js/supabase.js", "/js/account.js", "/js/sound.js", "/js/levels.js", "/js/progress.js", "/js/kit.js", "/js/more-levels.js", "/js/pwa.js",
-  "/reflexo/", "/encaixe/", "/cobrinha/", "/memoria/", "/alvo/", "/simon/", "/sudoku/", "/cacapalavras/", "/2048/", "/minas/", "/termo/", "/dueto/", "/termocomex/", "/lingo/", "/termodia/", "/comexdia/",
+  "/reflexo/", "/bolas/", "/encaixe/", "/cobrinha/", "/memoria/", "/alvo/", "/simon/", "/sudoku/", "/cacapalavras/", "/2048/", "/minas/", "/termo/", "/dueto/", "/termocomex/", "/lingo/", "/termodia/", "/comexdia/",
   "/icons/icon-192.png", "/manifest.webmanifest",
 ];
 

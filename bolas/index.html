@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0b1e">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Jogaí">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Chuva de Balas — Jogaí</title>
+  <meta name="description" content="Bolas passam por portais de multiplicação, viram munição e o soldado enfrenta a horda e o chefe.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Lilita+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/bolas.css">
+</head>
+<body>
+  <header class="site">
+    <div class="container">
+      <a href="/" class="logo pixel">Joga<span>í</span></a>
+      <div class="header-right">
+        <a href="/" class="back">← Todos os jogos</a>
+        <div id="account"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 class="game-title pixel">🔫 Chuva de Balas</h1>
+    <p class="game-sub">Arraste para mover o dispensador. As bolas passam pelos portais de multiplicação (x2, x5), viram munição e o soldado atira na horda e no chefe. Não deixe eles chegarem até você!</p>
+    <div class="bolas-info">Melhor tempo neste aparelho: <b id="melhor">—</b></div>
+    <div class="bolas-wrap"><canvas id="c" aria-label="Jogo Chuva de Balas"></canvas></div>
+  </main>
+
+  <footer class="site">
+    <div class="container">Jogaí © 2026 · feito pela Brasa Digital</div>
+  </footer>
+
+  <script type="module" src="/js/account.js"></script>
+  <script src="/bolas/game.js"></script>
+</body>
+</html>
